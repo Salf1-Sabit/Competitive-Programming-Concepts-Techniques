@@ -1,0 +1,516 @@
+updated# ----------------------- Snippets ----------------------- #
+
+snippet binary_expo "Power Algo" b
+/* Binary_Expo<long long>(n, i); */
+template<typename T, typename X>
+T Binary_Expo (T val, T power${1:, X m}) {
+  T output = 1;
+  while (power) {
+    if (power & 1) {
+      output = T((output * val)${2: % m});
+    }
+    val = (val * val)$2;
+    power >>= 1;
+  }
+  return output;
+}
+endsnippet
+
+snippet lcm "Lcm Utility" b
+auto lcm = [&] (${1:long long} a, $1 b) { 
+  return a / __gcd(a, b) * b;
+};
+endsnippet
+
+snippet prime_factorization "Prime Factorization" b
+template <typename T>
+vector<T> factorize(T n) {
+  vector<T> factors;
+  while (n & 1 ^ 1) {
+    factors.push_back(2);
+    n >>= 1;
+  }
+  for (T d = 3; d * d <= n; d += 2) {
+    while (!(n % d)) {
+      factors.push_back(d);
+      n /= d;
+    }
+  }
+  if (n > 1) { 
+    factors.push_back(n);
+  }
+  return factors;
+}
+endsnippet
+
+snippet policy_based_data_structure "Policy based data strucuture" b
+/** 1. Firstly, place the header files and namespace and set the data type and comparator.
+ *  2. ordered_set X;
+ *  3. X.insert(8);
+ *  4. *X.find_by_order(1) 
+ *        Note : finds the kth largest or the kth smallest element (counting from zero)
+ *              i.e. The element at the position i (powerful)
+ *  5. X.order_of_key(3) 
+ *       Note : finds the number of items in a set that are strictly smaller than our item
+ *              i.e. The position of the current element (powerful)
+ *  Note : This will exactly work like set, multiset, map [also can use their functinalities.
+ *    -> Not possible : erasing elements with their value (in multiset)
+ */
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+using namespace __gnu_pbds;
+typedef tree <
+  int, // type
+  null_type, // use mapped_type for map
+  less<int>, // comparator (less/greater) & type [less_equal for multiset]
+  rb_tree_tag,
+  tree_order_statistics_node_update
+> ordered_set;
+// Returns the position if found, else returns size
+auto pbds_lower_bound = [&] (int el) { 
+  return (int) ms.order_of_key(el);
+};
+// Returns the position if found, else returns size
+auto pbds_upper_bound = [&] (int el) { 
+  return (int) ms.order_of_key(el + 1);
+};
+endsnippet
+
+snippet to_binary "Binary representation of a number" b
+/* 1. to_binary<int>(leading_zeroes, n) */
+template<typename T>
+void to_binary_utility (T x, string& bin) {
+  if (x > 1) { 
+    to_binary_utility<T>(x >> 1, bin);
+  }
+  bin += ('0' + (x % 2));
+}
+template<typename T>
+string to_binary (int leading_zeroes, T x) { 
+  string bin = "";
+  to_binary_utility<T>(x, bin);
+  while ((int) bin.size() < leading_zeroes) { 
+    bin = '0' + bin;
+  }
+  return bin;
+}
+endsnippet
+
+snippet sieve "Sieve Utility" b
+/** 1. sieve_util sieve((int) 1e3); 
+  * 2. sieve.run_sieve();
+  * 3. vector<int> primes = sieve.get_primes<int>(50);
+  */
+int prime_n = 0;
+vector<bool> is_prime;
+struct sieve_util {  
+  sieve_util (int sz) { 
+    prime_n = sz;
+    is_prime.resize(prime_n + 1, true);
+  }
+  void run_sieve () { 
+    is_prime[0] = is_prime[1] = false;
+    for (long long i = 2; i * i <= prime_n; i++) {
+      if (is_prime[(int) i]) {
+        for (long long j = i * i; j <= prime_n; j += i) {
+          is_prime[(int) j] = false;
+        }
+      }
+    }
+  }
+  template <typename T>
+  vector<T> get_primes (int lim) { 
+    vector<T> generated_prime;
+    for (int i = 1; i <= lim; ++i) { 
+      if (is_prime[i]) { 
+        generated_prime.push_back(i);
+      }
+    }
+    return generated_prime;
+  }
+};
+endsnippet
+
+snippet find_divisors "Finding Divisors Algo" b
+/* vector<long long> d = Find_Divisors<long long>(n); */
+template<typename T> 
+vector<T> Find_Divisors (T n) {
+  vector<T> divisors;
+  for (T i = 1; i * i <= n; ++i) {
+    if (!(n % i)) {
+      divisors.push_back(i);
+      if (n / i != i) {
+        divisors.push_back(n / i);
+      }
+    }
+  }
+  return divisors;
+}
+endsnippet
+
+snippet primality_check "primality_check" b 
+bool primality_check (int x) {
+  for (int d = 2; d * d <= x; d++) {
+    if (x % d == 0) {
+      return false;
+    }
+  }
+  return true;
+}
+endsnippet
+
+snippet dsu "Disjoint Set Union" b 
+/** 1. Initialize parent and size.
+  *      a. sz.resize(n + 1);
+  *      b. parent.resize(n + 1);
+  * 2. DSU <int> dsu;
+  * 3. Good to go.
+***/
+vector<int> parent, sz;
+template<typename T>
+struct DSU { 
+  T find_set(T v) {
+    if (parent[v] == v) {
+      return v;
+    }
+    return parent[v] = find_set(parent[v]);
+  }
+
+  void make_set(T v) {
+    parent[v] = v;
+    sz[v] = 1;
+  }
+
+  void union_sets(T a, T b) {
+    a = find_set(a);
+    b = find_set(b);
+    if (a != b) {
+      if (sz[a] < sz[b]) {
+        swap(a, b);
+      }
+      parent[b] = a;
+      sz[a] += sz[b];
+    }
+  }
+
+  T find_group_size(T a) { 
+    a = find_set(a);
+    return sz[a];
+  }
+};
+endsnippet
+
+snippet  fenwick_tree "Fenwick Tree" b 
+/* 1. fenwick_tree<long long> bit; // to create the struct */
+/* 2. bit.build_empty_tree(n); // for empty tree */
+/* 3. bit.range_sum(a[i], n) // for range_sum */
+/* 4. bit.update_by_adding(a[i], 1); // To update an index with a new value */
+template<typename T>
+struct fenwick_tree {
+  vector<T> tree;
+  /* Array size must be 1 indexed. */
+  /* use this when only setting up the tree w/ the array is necessary */
+  void get_tree (vector<T> a) { 
+    tree = a;
+  }
+  /* Array size must be 1 indexed. */
+  /* use this when building empty tree is necessary */
+  void build_empty_tree (int n) { 
+    tree.assign(n + 1, 0);
+  }
+  /* Array size must be 1 indexed. */
+  /* builds the tree from array - (a) */
+  /* use this when only setting up the tree w/ the array is NOT necessary */
+  void build_tree (vector<T> a) { 
+    tree = a;
+    int n = (int) a.size() - 1;
+    for (int i = 1; i <= n; ++i) {
+      int idx = i;
+      idx = idx + (idx & -idx);
+      if (idx <= n) { 
+      tree[idx] += tree[i];
+      }
+    }
+  }
+  /* returns the prefix sum till idx */
+  T sum (int idx) { 
+    T result = 0;
+    while (idx) { 
+      result += tree[idx];
+      idx -= (idx & -idx);
+    }
+    return result;
+  }
+  /* returns the sum of segment l to r (inclusive) */
+  T range_sum (int l, int r) { 
+    return sum(r) - sum(l - 1);
+  }
+  /* updates an element at position idx */
+  void update_by_adding (int idx, T val) { 
+    int n = (int) tree.size() - 1;
+    while (idx <= n) { 
+      tree[idx] += val;
+      idx = idx + (idx & -idx);
+    }
+  }
+};
+endsnippet
+
+
+snippet  segment_tree "Segment Tree" b 
+/** 1. segment_tree<long long> seg_tree(a);
+  * 2. seg_tree.build(1, 0, n - 1);
+  * 3. Note : Make sure that the segment tree type and the 
+       vector type must mathc. E.g If, struct segment_tree <long long> 
+	   then, vector must be vector<long long>
+  *	4. Note : While using index for answer. Make sure to use them as (0 based)
+  * 5. now, you're good to go.
+ **/
+template <typename T>
+struct segment_tree {
+  int n;
+  vector<T> a, tree;
+  /* Used to create the tree array */
+  segment_tree (vector<T> cpy) { 
+    a = cpy;
+    n = (int) a.size();
+    tree.assign(n << 2, 0);
+  };
+  /* used to build the tree */ 
+  void build (int node, int l, int r) {
+    if (l == r) { 
+      tree[node] = a[l];
+      return;
+    }
+    int mid = (l + r) >> 1;
+    build(node << 1, l, mid);
+    build((node << 1) + 1, mid + 1, r);
+    tree[node] = tree[node << 1] + tree[(node << 1) + 1];
+  }
+  /* point sum or range sum */ 
+  T sum (int node, int start, int end, int l, int r) { 
+    if (end < l or r < start) {
+      return 0;
+    }
+    if (l <= start and end <= r) { 
+      return tree[node];
+    }
+    int mid = (start + end) >> 1;
+    T left_sum = sum(node << 1, start, mid, l, r);
+    T right_sum = sum((node << 1) + 1, mid + 1, end, l, r);
+    return left_sum + right_sum;
+  }
+  /* point updating value / adding value */
+  void update (int node, int start, int end, int id, T val) { 
+    if (start == end) {
+      tree[node] = val;
+      return;
+    }
+    int mid = (start + end) >> 1;
+    if (id <= mid) { 
+      update(node << 1, start, mid, id, val);
+    } else {
+      update((node << 1) + 1, mid + 1, end, id, val);
+    }
+    tree[node] = tree[node << 1] + tree[(node << 1) + 1];
+  }
+};
+endsnippet
+
+
+snippet lazy_propagation "Lazy Propagation" b
+/** 1. struct lazy_propagation <int64_t>lazy_prop(a);
+  * 2. lazy_prop.build(1, 0, n - 1);
+  * 3. now, you're good to go.
+ **/
+template <typename T>
+struct lazy_propagation {
+  struct info {
+	T sum = 0, prop = 0;
+  };
+
+  int n;
+  vector<T> a;
+  vector<info> tree;
+
+  lazy_propagation (vector<T> cpy) { 
+	a = cpy;
+	n = (int) a.size();
+	tree.resize(4 * n);
+  };
+
+  void build (int node, int l, int r) {
+	if (l == r) { 
+	  tree[node].sum = a[l];
+	  return;
+	}
+	int mid = (l + r) >> 1;
+	build(node << 1, l, mid);
+	build((node << 1) + 1, mid + 1, r);
+	tree[node].sum = tree[node << 1].sum + tree[(node << 1) + 1].sum;
+  }
+
+  T sum (int node, int start, int end, int l, int r, T carry = 0) { 
+	if (end < l or r < start) {
+	  return 0;
+	}
+	if (l <= start and end <= r) { 
+	  return tree[node].sum + (((end - start) + 1) * carry);
+	}
+	int mid = (start + end) >> 1;
+	T left_sum = sum(node << 1, start, mid, l, r, carry + tree[node].prop);
+	T right_sum = sum((node << 1) + 1, mid + 1, end, l, r, carry + tree[node].prop);
+	return left_sum + right_sum;
+  }
+
+  void update (int node, int start, int end, int l, int r, T val) { 
+	if (end < l or r < start) {
+	  return;
+	}
+	if (l <= start and end <= r) {
+	  tree[node].sum += ((end - start) + 1) * val;
+	  tree[node].prop += val;
+	  return;
+	}
+	int mid = (start + end) >> 1;
+	update(node << 1, start, mid, l, r, val);
+	update((node << 1) + 1, mid + 1, end, l, r, val);
+	tree[node].sum = tree[node << 1].sum + tree[(node << 1) + 1].sum + (((end - start) + 1) * tree[node].prop);
+  }
+};
+endsnippet
+
+snippet Rectangle "Rectangle Utility" b
+/* 1. Rect<int> r1(x1, y1, x2, y2);
+ * 2. r1.area()
+ * 3. intersected_area<int>(r1, r2)
+ * 4. intersect<int>(r1, r2)
+ * 5. array<int, 4> Ta = intersected_axis<int64_t>(r1, r2);
+ */
+template<typename T> 
+struct Rect {
+  T x1, y1, x2, y2;
+  Rect () {}
+  Rect (T x1, T y1, T x2, T y2) { 
+    this -> x1 = x1;
+    this -> x2 = x2;
+    this -> y1 = y1;
+    this -> y2 = y2;
+  }
+  T area () {
+    return (y2 - y1) * (x2 - x1); 
+  }
+};
+
+/* Used to determine the intersected area of two rectangles. */
+template<typename T> 
+T intersected_area (Rect<T> p, Rect<T> q) {
+  T xOverlap = max((T) 0, min(p.x2, q.x2) - max(p.x1, q.x1));
+  T yOverlap = max((T) 0, min(p.y2, q.y2) - max(p.y1, q.y1));
+  return xOverlap * yOverlap;
+}
+
+/* Used to detect if there is any intersection between two rectangles */
+/* or not? */
+template<typename T> 
+bool intersect (Rect<T> p, Rect<T> q) {
+  T xOverlap = max((T) 0, min(p.x2, q.x2) - max(p.x1, q.x1));
+  return xOverlap > (T) 0;
+}
+
+/* If using this function you've to make sure that there is */ 
+/* definitely a intersection between these two rectangles. */
+/* Which can be done using intersect<int>(r1, r2) function. */
+template<typename T> 
+array<T, 4> intersected_axis (Rect<T> p, Rect<T> q) {
+  array<T, 4> axis;
+  T Nx1 = max(p.x1, q.x1);
+  T Nx2 = min(p.x2, q.x2);
+  T Ny1 = max(p.y1, q.y1);
+  T Ny2 = min(p.y2, q.y2);
+  axis[0] = Nx1, axis[1] = Ny1;
+  axis[2] = Nx2, axis[3] = Ny2;
+  return axis;
+}
+endsnippet
+
+snippet y_combinator "y_combinator Utility" b
+/* 1. auto fact = y_combinator([&](auto fact, int n) -> int { */
+/*      return n == 1 ? 1 : n * fact(n - 1); */
+/*    }); */  
+/* 2. cout << fact(a) << endl; */
+/* 3. Note : Name of the recurse function and the calling function can be same. */
+namespace std {
+  template<class U>
+  class y_combinator_result {
+    U func;
+  public:
+    template<class T>
+    explicit y_combinator_result(T &&arg): func(std::forward<T>(arg)) {}
+    template<class ...Args>
+    decltype(auto) operator()(Args &&...args) {
+      return func(std::ref(*this), std::forward<Args>(args)...);
+    }
+  };
+  template<class U>
+  decltype(auto) y_combinator(U &&arg) {
+    return y_combinator_result<std::decay_t<U>>(std::forward<U>(arg));
+  }
+}
+endsnippet
+
+snippet intersect "Two objects intersection utility" b
+/* intersect<int>(a, b, c, d) 
+ * Note : Used for determining if two objects intersects or not.
+ */
+template<typename T> 
+bool intersect (int a, int b, int c, int d) {
+  T xOverlap = max((T) 0, min(b, d) - max(a, c));
+  return xOverlap > (T) 0;
+}
+endsnippet
+
+snippet count_inversions "counting inversions" b
+/* counting inversions : */ 
+/* 1. long long ans = count_inversions<long long>(a, n); */
+template <typename T, typename U>
+T merge_sides(vector<U>& ar, vector<U>& dmy, int st, int m, int en) {
+  T inv_count = 0;
+  int i = st, j = m, k = st;
+  while (i <= m - 1 and j <= en) {
+    if (ar[i] <= ar[j]) {
+      dmy[k++] = ar[i++];
+    }
+    else {
+      dmy[k++] = ar[j++];
+      inv_count += (m - i);
+    }
+  }
+  while (i <= m - 1) {
+    dmy[k++] = ar[i++];
+  }
+  while (j <= en) {
+    dmy[k++] = ar[j++];
+  }
+  for (i = st; i <= en; i++) {
+    ar[i] = dmy[i];
+  }
+  return inv_count;
+}
+template <typename T, typename U>
+T merge_sort (vector<U>& ar, vector<U>& dmy, int st, int en) {
+  T inv = 0;
+  if (st < en) {
+    int m = ((st + en) >> 1);
+    inv += (T) merge_sort<T>(ar, dmy, st, m);
+    inv += (T) merge_sort<T>(ar, dmy, m + 1, en);
+    inv += (T) merge_sides<T>(ar, dmy, st, m + 1, en);
+  }
+  return inv;
+}
+template <typename T, typename U>
+T count_inversions (vector<U>& ar, int n) {
+  vector<U> dmy(n);
+  return merge_sort<T>(ar, dmy, 0, n - 1);
+}
+endsnippet

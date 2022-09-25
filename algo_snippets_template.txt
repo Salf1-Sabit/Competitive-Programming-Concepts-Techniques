@@ -1,4 +1,4 @@
-updated# ----------------------- Snippets ----------------------- #
+# ----------------------- Snippets ----------------------- #
 
 snippet binary_expo "Power Algo" b
 /* Binary_Expo<long long>(n, i); */

@@ -1,5 +1,26 @@
 # ----------------------- Snippets ----------------------- #
 
+
+snippet regular_4d_adjacent_moves "Regular 4D adjacent Moves" b
+array<int, 4> dx = {-1, 0, 1, 0};
+array<int, 4> dy = {0, 1, 0, -1};
+endsnippet
+
+snippet regular_4d_corner_moves "Regular 4D corner Moves" b
+array<int, 4> dx = {-1, 1, 1, -1};
+array<int, 4> dy = {1, 1, -1, -1};
+endsnippet
+
+snippet regular_8d_moves "Regular 8D Moves" b
+array<int, 8> dx = {-1, -1, 0, 1, 1, 1, 0, -1};
+array<int, 8> dy = {0, 1, 1, 1, 0, -1, -1, -1};
+endsnippet
+
+snippet knight_moves "Knight Moves" b
+array<int, 8> dx = {-2, -2, 2, 2, -1, 1, -1, 1};
+array<int, 8> dy = {-1, 1, -1, 1, 2, 2, -2, -2};
+endsnippet
+
 snippet lcm "Lcm Utility" b
 auto lcm = [&] (${1:long long} a, $1 b) { 
   return a / __gcd(a, b) * b;

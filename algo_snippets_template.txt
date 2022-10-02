@@ -11,6 +11,11 @@ array<int, 4> dx = {-1, 1, 1, -1};
 array<int, 4> dy = {1, 1, -1, -1};
 endsnippet
 
+snippet regular_4d_square_moves "Regular 4D Square Moves" b
+array<int, 4> dx = {0, 0, 1, 1};
+array<int, 4> dy = {0, 1, 1, 0};
+endsnippet
+
 snippet regular_8d_moves "Regular 8D Moves" b
 array<int, 8> dx = {-1, -1, 0, 1, 1, 1, 0, -1};
 array<int, 8> dy = {0, 1, 1, 1, 0, -1, -1, -1};

@@ -49,15 +49,15 @@ bool intersect (int a, int b, int c, int d) {
 }
 endsnippet
 snippet binary_expo "Power Algo" b
-/* Binary_Expo<long long>(n, i); */
+/* binary_expo<int>(2, n - 1, m); */
 template<typename T, typename X>
-T Binary_Expo (T val, T power${1:, X m}) {
+T Binary_Expo (T val, T power, X m) {
   T output = 1;
   while (power) {
     if (power & 1) {
-      output = T((output * val)${2: % m});
+      output = T((output * 1LL * val) % m);
     }
-    val = (val * val)$2;
+    val = (val * 1LL * val) % m;
     power >>= 1;
   }
   return output;
@@ -542,7 +542,7 @@ snippet count_inversions "counting inversions" b
 /* counting inversions : */ 
 /* 1. long long ans = count_inversions<long long>(a, n); */
 template <typename T, typename U>
-T merge_sides(vector<U>& ar, vector<U>& dmy, int st, int m, int en) {
+T merge_sides (vector<U>& ar, vector<U>& dmy, int st, int m, int en) {
   T inv_count = 0;
   int i = st, j = m, k = st;
   while (i <= m - 1 and j <= en) {

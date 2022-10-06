@@ -157,11 +157,11 @@ struct sieve_util {
 endsnippet
 
 snippet find_divisors "Finding Divisors Algo" b
-/* vector<long long> d = Find_Divisors<long long>(n); */
+/* auto d = find_divisors<int>(n); */
 template<typename T> 
-vector<T> Find_Divisors (T n) {
+vector<T> find_divisors (T n) {
   vector<T> divisors;
-  for (T i = 1; i * i <= n; ++i) {
+  for (T i = 1; i * 1LL * i <= n; ++i) {
     if (!(n % i)) {
       divisors.push_back(i);
       if (n / i != i) {

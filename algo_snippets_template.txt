@@ -521,13 +521,13 @@ namespace std {
   template<class U>
   class y_combinator_result {
     U func;
-  public:
-    template<class T>
-    explicit y_combinator_result(T &&arg): func(std::forward<T>(arg)) {}
-    template<class ...Args>
-    decltype(auto) operator()(Args &&...args) {
-      return func(std::ref(*this), std::forward<Args>(args)...);
-    }
+	public:
+	  template<class T>
+	  explicit y_combinator_result(T &&arg): func(std::forward<T>(arg)) {}
+	  template<class ...Args>
+	  decltype(auto) operator()(Args &&...args) {
+		return func(std::ref(*this), std::forward<Args>(args)...);
+	  }
   };
   template<class U>
   decltype(auto) y_combinator(U &&arg) {

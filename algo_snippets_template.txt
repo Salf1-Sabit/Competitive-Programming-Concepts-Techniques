@@ -645,7 +645,7 @@ struct binary_lifting {
   }
   int get_dist (int u, int v) { 
     int com_ances = lca(u, v);
-    return lvl[u] + lvl[v] - (1 << lvl[com_ances]);
+    return lvl[u] + lvl[v] - (lvl[com_ances] << 1);
   }
 };
 endsnippet

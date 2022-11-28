@@ -652,6 +652,7 @@ endsnippet
 
 
 snippet kmp "Knuth Morris Pratt Algo (strings)" b
+/* Total complexity: O(n + m) */
 /* Application (string problems) : */ 
 /*  1. Used to extract matched positions */
 /*  2. Used to know if we have a match or not */
@@ -684,7 +685,7 @@ struct kmp {
     this -> t = t;
     n = (T) s.size();
     m = (T) t.size();
-    tab.assign(n, 0);
+    tab.assign(m, 0);
     proc();
   }
   // Returns all the starting positions where we have a match
@@ -713,4 +714,94 @@ struct kmp {
     return ids;
   }
 };
+endsnippet
+
+
+snippet bst_construction "BST construction" b
+/* BST constructing */
+struct node { 
+  int data;
+  node *left;
+  node *right;
+};
+
+node *root = NULL;
+auto insert_in_bst = [&] (int x) { 
+  node *cur = new node();
+  cur -> data = x;
+  cur -> left = NULL;
+  cur -> right = NULL;
+  if (root == NULL) { 
+    root = cur;
+  } else { 
+    node *cpy = root;
+    while (true) { 
+      if (cur -> data <= cpy -> data) { 
+        if (cpy -> left == NULL) { 
+          cpy -> left = cur;
+          break;
+        } else { 
+          cpy = cpy -> left;
+        }
+      } else { 
+        if (cpy -> right == NULL) { 
+          cpy -> right = cur;
+          break;
+        } else { 
+          cpy = cpy -> right;
+        }
+      }
+    }
+  }
+};
+
+for (int i = 1; i <= n; ++i) { 
+  int x;
+  scanf("%d", &x);
+  insert_in_bst(x);
+}
+endsnippet
+
+snippet bst_insertion_after_construction "BST insertion after construction" b
+/* BST insertion after constructing */
+auto insert_after_constructing = [&] () { 
+  node *cur = new node();
+  cur -> data = k;
+  cur -> left = NULL;
+  cur -> right = NULL;
+  node *cpy = root;
+  while (true) { 
+    if (last < cpy -> data) { 
+      if (cpy -> left == NULL) { 
+        cpy -> left = cur;
+        break;
+      } else { 
+        cpy = cpy -> left;
+      }
+    } else { 
+      if (cpy -> right == NULL) { 
+        cpy -> right = cur;
+        break;
+      } else { 
+        cpy = cpy -> right;
+      }
+    }
+  }
+};
+endsnippet
+
+snippet bst_check "BST check" b
+/* BST check */
+auto is_bst = y_combinator([=](auto is_bst, node *root) -> bool {
+  if (root == NULL) { 
+    return false;
+  }
+  if (root -> data == k) { 
+    return true;
+  }
+  if (k <= root -> data) { 
+    return is_bst(root -> left);
+  }
+  return is_bst(root -> right);
+});  
 endsnippet

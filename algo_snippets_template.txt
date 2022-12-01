@@ -716,6 +716,143 @@ struct kmp {
 };
 endsnippet
 
+snippet z_algo "Z Algorithm (string)" b
+/* auto z = z_algo<int>(s); */
+/* Time complexity: O(n + n) */
+/* Note: every (i) denotes, what is the max length prefix mathces with the string starting from (i) */
+/* Z algo exactly works like KMP but, most of the times probelems are more intuitive with Z algo. */ 
+template <typename T>
+vector<T> z_algo (string s) {
+  int n = (int) s.size();
+  vector<T> z(n);
+  z[0] = n;
+  for (int i = 1, l = 0, r = 0; i < n; ++i) {
+    /* if we're in a already computed segment, then use the computed answer to save time */
+    if (i <= r) {
+      z[i] = min(r - i + 1, z[i - l]);
+    }
+    /* just keep on going while have a match */
+    while (i + z[i] < n and s[z[i]] == s[i + z[i]]) { 
+      z[i] += 1;
+    }
+    /* if we have computed a segment for the first time, update it */
+    if (r < i + z[i] - 1) { 
+      l = i, r = i + z[i] - 1;
+    }
+  }
+  return z;
+}
+endsnippet
+
+snippet trie "Trie utility (string algo)" b
+/* Time complexity (construction): */ 
+/*   * number of nodes. Which depends on matched prefix. */
+/*   * the more prefix-match, the better. */
+/* Time complexity (per query): */ 
+/*   * length of the asked string */ 
+/* trie tri; */
+/* tri.insert(s); */
+/* cout << (tri.search(t) ? "YES\n" : "NO\n") << '\n'; */
+/* tri.del(); */
+/* Note: useful for searching a string is present or not */
+struct trie { 
+  struct node { 
+    bool endmark;
+	/* Change the size to (10) if working with digits */
+    node* next[26];
+    node () { 
+      endmark = false;
+	  /* Change the limit to 10 if working with digits */
+      for (int i = 0; i < 26; ++i) { 
+        next[i] = NULL;
+      }
+    }
+  } * root;
+  /* trie tri; */
+  trie () { 
+    root = new node();
+  }
+  /* tri.insert(s); */
+  /* inserts a string the the trie */
+  void insert (string s) { 
+    node* curr = root;
+    for (auto ch : s) { 
+      /* change 'a' according to the problem statement */
+      int id = ch - 'a';
+      if (curr -> next[id] == NULL) { 
+        curr -> next[id] = new node();
+      }
+      curr = curr -> next[id];
+    }
+    curr -> endmark = true;
+  }
+  /* return if a string is present in the list or not */
+  /* cout << (tri.search(t) ? "YES\n" : "NO\n") << '\n'; */
+  bool search (string s) { 
+    node* curr = root;
+    for (auto ch : s) { 
+      /* change 'a' according to the problem statement */
+      int id = ch - 'a';
+      if (curr -> next[id] == NULL) { 
+        return false;
+      }
+      curr = curr -> next[id];
+    }
+    return curr -> endmark;
+  }
+  void del_node (node* curr) { 
+	/* Change the limit to 10 if working with digits */
+    for (int i = 0; i < 26; ++i) { 
+      if (curr -> next[i]) { 
+        del_node(curr -> next[i]);
+      }
+    }
+    delete(curr);
+  }
+  /* tri.del(); */
+  /* deletes, all the nodes. Useful in reducing memory */
+  void del () { 
+    del_node(root);
+  }
+};
+endsnippet
+
+snippet string_hash "String hashing utility" b
+/* Time complexity: Size of the string O(s.size()) */
+/* string_hash<int> hash((int) 1e5); */
+/* hash.comp_hash(s); */
+/* Note: Used to convert a string to a integer in a form of hash value. */ 
+/*       To, reduce the complexity of comparing strings. Which gets reduced from O(s.size()) to O(1) */
+template <typename T> 
+struct string_hash { 
+  int n;
+  int p = 53;
+  int m = (int) 1e9 + 7;
+  vector<T> p_pow;
+  void gen_pow () { 
+    p_pow[0] = 1;
+    for (int i = 1; i < n; i++) { 
+      p_pow[i] = (p_pow[i - 1] * 1LL * p) % m;
+    }
+  }
+  /* Receives the max size of a string can be */ 
+  string_hash (int n) { 
+    this -> n = n;
+    p_pow.assign(n, 0);
+    gen_pow();
+    dbg(p_pow);
+  }
+  /* Computes hash value of a given string */
+  T comp_hash (string s) { 
+    T hash_val = 0;
+    for (int i = 0; i < (int) s.size(); ++i) { 
+      /* Change 'a' according to the problem statement */
+      hash_val = (hash_val + ((((s[i] - 'a') + 1) * p_pow[i]) % m)) % m;
+    }
+    return hash_val;
+  }
+};
+endsnippet
 
 snippet bst_construction "BST construction" b
 /* BST constructing */
@@ -805,3 +942,4 @@ auto is_bst = y_combinator([=](auto is_bst, node *root) -> bool {
   return is_bst(root -> right);
 });  
 endsnippet
+

@@ -823,13 +823,14 @@ snippet string_hash "String hashing utility" b
 /* hash.comp_hash(s); */
 /* Note: -> Used to convert a string to a integer in a form of hash value. */ 
 /*          To, reduce the complexity of comparing strings. Which gets reduced from O(s.size()) to O(1) */
-/* 	     -> If there's atleast 10^6 strings, then there'll be definitely collisions.
-/*	     -> To reduce collisions, two (p) can be used. Ex: p1 = 53, p2 = 31. Do everything similar like p1. Then, 
-/* 		    to compare check if both of there (p1 and p2) values are exactly similar or not. (Set can also be used).
-/* Imp: An crucial property of hash function, if hash value of all equal string (in length also) are retrieved from 
-/*      a prefix sum or something. Then, if we multiply all of them with a particular power and mod them, then we 
-/*      get all the similar hash values.
-/*      Example: cur = (cur * 1LL * p_pow[n - j]) % mod;
+/* 	     -> If there's atleast 10^6 strings, then there'll be definitely collisions. */
+/*	     -> To reduce collisions, two (p) can be used. Ex: p1 = 53, p2 = 31. Do everything similar like p1. Then, */
+/* 		    to compare check if both of there (p1 and p2) values are exactly similar or not. (Set can also be used).*/
+
+/* Imp: An crucial property of hash function, if hash value of all equal string (in length also) are retrieved from */ 
+/*      a prefix sum or something. Then, if we multiply all of them with a particular powers in descending order to balance them and then mod them, then we */
+/*      get all the similar hash values. */
+*      Example: cur = (cur * 1LL * p_pow[n - j]) % mod; */
 template <typename T> 
 struct string_hash { 
   int n;
@@ -854,7 +855,7 @@ struct string_hash {
     T hash_val = 0;
     for (int i = 0; i < (int) s.size(); ++i) { 
       /* Change 'a' according to the problem statement */
-      hash_val = (hash_val + ((((s[i] - 'a') + 1) * p_pow[i]) % m)) % m;
+      hash_val = (hash_val + ((((s[i] - 'a') + 1) * 1LL * p_pow[i]) % m)) % m;
     }
     return hash_val;
   }

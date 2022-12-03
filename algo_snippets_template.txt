@@ -333,6 +333,141 @@ struct fenwick_tree {
 };
 endsnippet
 
+snippet  sqrt_decomp "Sqrt Decomposition Utlity" b 
+/* Processes each query in sqrt(n) time. */
+/* sqrt_decomp<int> sd(a); */
+/* cout << sd.query(l, r) << '\n'; */
+template <typename T> 
+struct sqrt_decomp { 
+  int n; 
+  vector<T> a;
+  vector<T> tab;
+  int tot_block;
+  void proc () { 
+    for (int i = 0; i < n; ++i) { 
+      T& xx = tab[i / tot_block];
+      /* Change this according to the question */
+      xx = min(xx, a[i]);
+    }
+  }
+  sqrt_decomp (vector<T> a) { 
+    this -> a = a;
+    n = (int) a.size();
+    tot_block = (int) sqrtl(n);
+    /* Change this according to the question */
+    tab.assign(tot_block + 1, (T) 1e9);
+    proc();
+  }
+  /* returns sum/min/max/cnt of an array in the range (l, r) */
+  T query (int l, int r) { 
+    /* Change this according to the question */
+    T mn = (T) 1e9;
+    int lb = l / tot_block;
+    int rb = r / tot_block;
+    if (lb == rb) { 
+      for (int i = l; i <= r; ++i) { 
+        /* Change this according to the question */
+        mn = min(a[i], mn);
+      }
+      return mn;
+    }
+    for (int i = l; i < tot_block * (lb + 1); ++i) { 
+      /* Change this according to the question */
+      mn = min(a[i], mn);
+    }
+    for (int i = lb + 1; i <= rb - 1; ++i) { 
+      /* Change this according to the question */
+      mn = min(tab[i], mn);
+    }
+    for (int i = tot_block * rb; i <= r; ++i) { 
+      /* Change this according to the question */
+      mn = min(a[i], mn);
+    }
+    return mn;
+  }
+};
+endsnippet
+
+snippet mos_algo "Mo's algorithm Utility" b 
+/* Time Complexity: O((N + Q) F sqrt(Q)). Where F = time of add-remove functions. */
+/* mos_algo<int> mo(Q, a); */
+/* auto ans = mo.query_answers(); */
+/* This algo is used to answer those queries which are dynamic e.g. (distinct elems). Which cannot be done using segment tree. */ 
+/* Before using this, make sure to store all the queries (0 based indexing) in a vector this manner vector{l, r, i} */
+template <typename T> 
+struct mos_algo { 
+  int q;
+  int tot_block; 
+  vector<T> a;
+  /* Important: This is the answer variable */ 
+  /* Change according to the question */
+  T curr_ans = 0;
+  vector<T> frq;
+  /* array<T, 3> {l, r, id} */
+  vector<array<T, 3>> Q;
+  void proc () { 
+    /* sorts the queries in asc order */
+    sort(Q.begin(), Q.end(), [&] (array<T, 3> x, array<T, 3> y) { 
+      int blockl = x[0] / tot_block;
+      int blockr = y[0] / tot_block;
+      if (blockl != blockr) { 
+        return blockl < blockr;
+      }
+      return x[1] < y[1];
+    });
+  }
+  mos_algo (vector<array<T, 3>> Q, vector<T> a, int N) { 
+    this -> Q = Q;
+    this -> a = a;
+    q = (int) Q.size();
+    frq.assign(N + 1, 0);
+    tot_block = (int) sqrtl(q);
+    proc();
+  }
+  void add (int pos) { 
+    /* Change according to the question */
+    if (++frq[a[pos]] == 1) { 
+      curr_ans += 1;
+    }
+  }
+  void remove (int pos) { 
+    /* Change according to the question */
+    if (!--frq[a[pos]]) { 
+      curr_ans -= 1;
+    }
+  }
+  vector<T> query_answers () { 
+    int cur_l = 0;
+    int cur_r = -1;
+    vector<T> ans(q);
+    for (int i = 0; i < q; ++i) { 
+      int l = Q[i][0];
+      int r = Q[i][1];
+      int id = Q[i][2];
+      /* Spread section and try adding elements to the answer*/
+      while (l < cur_l) { 
+        cur_l -= 1;
+        add(cur_l);
+      }
+      while (cur_r < r) { 
+        cur_r += 1;
+        add(cur_r);
+      }
+      /* Shrinking section and try removing elements from the answer*/
+      while (cur_l < l) { 
+        remove(cur_l);
+        cur_l += 1;
+      }
+      while (r < cur_r) { 
+        remove(cur_r);
+        cur_r -= 1;
+      }
+      ans[id] = curr_ans; 
+    }
+    return ans;
+  }
+};
+endsnippet
 
 snippet  segment_tree "Segment Tree" b 
 /** 1. segment_tree<long long> seg_tree(a);

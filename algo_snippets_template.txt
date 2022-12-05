@@ -390,33 +390,37 @@ endsnippet
 
 snippet mos_algo "Mo's algorithm Utility" b 
 /* Time Complexity: O((N + Q) F sqrt(Q)). Where F = time of add-remove functions. */
-/* mos_algo<int> mo(Q, a); */
+/*  				-> Firstly, if all of the left index are at same block then, for one block we will move our right index at most N times. Then, for every block we will have O(N * sqrt(N)) times. /*
+/* 					-> Secondly, for each query our left pointer can move at most sqrt(N) times. Because, each block has at most sqrt(N) cells. So, for Q query there will be O(Q * sqrt(N)) calls at most. 
+/* 					-> Hence, O(N * sqrt(N) + Q * sqrt(N)) = O((N + Q) * sqrt(N)) by taking sqrt(N) common from both sides. /*
+/* mos_algo<int> mo(Q, a, N); */
 /* auto ans = mo.query_answers(); */
 /* This algo is used to answer those queries which are dynamic e.g. (distinct elems). Which cannot be done using segment tree. */ 
 /* Before using this, make sure to store all the queries (0 based indexing) in a vector this manner vector{l, r, i} */
 template <typename T> 
 struct mos_algo { 
   int q;
+  vector<int> a;
+  vector<T> frq;
   int tot_block; 
-  vector<T> a;
   /* Important: This is the answer variable */ 
   /* Change according to the question */
   T curr_ans = 0;
-  vector<T> frq;
   /* array<T, 3> {l, r, id} */
-  vector<array<T, 3>> Q;
+  vector<array<int, 3>> Q;
   void proc () { 
     /* sorts the queries in asc order */
-    sort(Q.begin(), Q.end(), [&] (array<T, 3> x, array<T, 3> y) { 
+    sort(Q.begin(), Q.end(), [&] (array<int, 3> x, array<int, 3> y) { 
       int blockl = x[0] / tot_block;
       int blockr = y[0] / tot_block;
       if (blockl != blockr) { 
         return blockl < blockr;
       }
-      return x[1] < y[1];
+	  /* Optimization: Here, by changing the add block in ascending order and the even block in descending order. The right pointer will have to move less. This will eliminate the extra movement of the right pointer which was wasteful. right pointer movement (before) i: 1, 2, 3, 1, 2, 3, 1, 2, 3. Right pointer movement (now) i: 1, 2, 3, 3, 2, 1, 1, 2, 3, 3, 2, 1. */ 
+      return (x[0] / tot_block & 1) ? x[1] < y[1] : y[1] < x[1];
     });
   }
-  mos_algo (vector<array<T, 3>> Q, vector<T> a, int N) { 
+  mos_algo (vector<array<int, 3>> Q, vector<int> a, int N) { 
     this -> Q = Q;
     this -> a = a;
     q = (int) Q.size();
@@ -465,6 +469,61 @@ struct mos_algo {
       ans[id] = curr_ans; 
     }
     return ans;
+  }
+};
+endsnippet
+
+snippet sparse_table "Sparse table utility" b 
+/* Used for answering queries, but can answer R(Min/Max)Q in O(1) */
+/* sparse_table<int> st(a, N); */
+/* cout << st.min_query(l, r) << '\n'; */
+template <typename T> 
+struct sparse_table { 
+  int N;
+  int n, k;
+  vector<T> a;
+  vector<T> logs;
+  vector<vector<T>> st;
+  void gen_logs () { 
+    logs[1] = 0;
+    for (int i = 2; i <= N; i++) { 
+      logs[i] = logs[i/2] + 1;
+    }
+  }
+  void proc () { 
+    st[0] = a;
+    for (int i = 1; i <= k; ++i) { 
+      for (int j = 0; j + (1 << i) - 1 < n; ++j) {
+        /* Change this line according the question */
+        st[i][j] = min(st[i - 1][j], st[i - 1][j + (1 << (i - 1))]);
+      }
+    }
+  }
+  sparse_table (vector<T> a, int N) { 
+    this -> a = a;
+    this -> N = N;
+    n = (int) a.size();
+    logs.assign(N + 1, 0);
+    gen_logs();
+    k = logs[n];
+    st.assign(k + 1, vector<T>(n + 1, 0));
+    proc();
+  }
+  /* This function is used for only min/max query O(1); */
+  T min_query (int l, int r) { 
+    int p = logs[r - l + 1];
+    return min(st[p][l], st[p][r - (1 << p) + 1]);
+  }
+  /* This function is used for the rest of the query O(log(n)) */
+  T sum_query (int l, int r) { 
+    T sum = 0;
+    for (int i = k; i >= 0; --i) { 
+      if ((1 << i) <= r - l + 1) { 
+        sum += st[i][l];
+        l += 1 << i;
+      }
+    }
+    return sum;
   }
 };
 endsnippet
@@ -538,56 +597,51 @@ snippet lazy_propagation "Lazy Propagation" b
 template <typename T>
 struct lazy_propagation {
   struct info {
-	T sum = 0, prop = 0;
+    T sum = 0, prop = 0;
   };
-
   int n;
   vector<T> a;
   vector<info> tree;
-
   lazy_propagation (vector<T> cpy) { 
-	a = cpy;
-	n = (int) a.size();
-	tree.resize(4 * n);
+    a = cpy;
+    n = (int) a.size();
+    tree.resize(4 * n);
   };
-
   void build (int node, int l, int r) {
-	if (l == r) { 
-	  tree[node].sum = a[l];
-	  return;
-	}
-	int mid = (l + r) >> 1;
-	build(node << 1, l, mid);
-	build((node << 1) + 1, mid + 1, r);
-	tree[node].sum = tree[node << 1].sum + tree[(node << 1) + 1].sum;
+    if (l == r) { 
+      tree[node].sum = a[l];
+      return;
+    }
+    int mid = (l + r) >> 1;
+    build(node << 1, l, mid);
+    build((node << 1) + 1, mid + 1, r);
+    tree[node].sum = tree[node << 1].sum + tree[(node << 1) + 1].sum;
   }
-
   T sum (int node, int start, int end, int l, int r, T carry = 0) { 
-	if (end < l or r < start) {
-	  return 0;
-	}
-	if (l <= start and end <= r) { 
-	  return tree[node].sum + (((end - start) + 1) * carry);
-	}
-	int mid = (start + end) >> 1;
-	T left_sum = sum(node << 1, start, mid, l, r, carry + tree[node].prop);
-	T right_sum = sum((node << 1) + 1, mid + 1, end, l, r, carry + tree[node].prop);
-	return left_sum + right_sum;
+    if (end < l or r < start) {
+      return 0;
+    }
+    if (l <= start and end <= r) { 
+      return tree[node].sum + (((end - start) + 1) * carry);
+    }
+    int mid = (start + end) >> 1;
+    T left_sum = sum(node << 1, start, mid, l, r, carry + tree[node].prop);
+    T right_sum = sum((node << 1) + 1, mid + 1, end, l, r, carry + tree[node].prop);
+    return left_sum + right_sum;
   }
-
   void update (int node, int start, int end, int l, int r, T val) { 
-	if (end < l or r < start) {
-	  return;
-	}
-	if (l <= start and end <= r) {
-	  tree[node].sum += ((end - start) + 1) * val;
-	  tree[node].prop += val;
-	  return;
-	}
-	int mid = (start + end) >> 1;
-	update(node << 1, start, mid, l, r, val);
-	update((node << 1) + 1, mid + 1, end, l, r, val);
-	tree[node].sum = tree[node << 1].sum + tree[(node << 1) + 1].sum + (((end - start) + 1) * tree[node].prop);
+    if (end < l or r < start) {
+      return;
+    }
+    if (l <= start and end <= r) {
+      tree[node].sum += ((end - start) + 1) * val;
+      tree[node].prop += val;
+      return;
+    }
+    int mid = (start + end) >> 1;
+    update(node << 1, start, mid, l, r, val);
+    update((node << 1) + 1, mid + 1, end, l, r, val);
+    tree[node].sum = tree[node << 1].sum + tree[(node << 1) + 1].sum + (((end - start) + 1) * tree[node].prop);
   }
 };
 endsnippet

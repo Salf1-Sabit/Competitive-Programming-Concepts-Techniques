@@ -933,6 +933,49 @@ vector<T> z_algo (string s) {
 }
 endsnippet
 
+snippet manachers "Manacher's algo utility (string algo)" b
+/* Return the length of a palindrome from left side, defining (i) as the middle of that palindrome*/
+/* manachers<int> man(s); */
+/* auto ans = man.ret_ans(); */
+template <typename T> 
+struct manachers { 
+  int n;
+  vector<int> p;
+  void manac_odd (string s) { 
+    n = (int) s.size();
+    s = "(" + s + ")";
+    p.assign(n + 2, 0);
+    int l = 1, r = 1;
+    for (int i = 1; i <= n; ++i) { 
+      p[i] = max(0, min(r - i, p[l + (r - i)]));
+      while (s[i - p[i]] == s[i + p[i]]) { 
+        p[i] += 1;
+      }
+      if (r < i + p[i]) { 
+        l = i - p[i];
+        r = i + p[i];
+      }
+    }
+  }
+  manachers (string t) { 
+    string s = "";
+    for (auto c : t) { 
+      s += string("#") + c;
+    }
+    manac_odd(s + "#");
+  }
+  vector<T> ret_ans () { 
+    vector<int> ans;
+    for (int i = 1; i <= n; ++i) { 
+      if (i & 1 ^ 1) { 
+        ans.push_back((p[i] >> 1) + (p[i] & 1));
+      }
+    } 
+    return ans;
+  }
+};
+endsnippet
+
 snippet trie "Trie utility (string algo)" b
 /* Time complexity (construction): */ 
 /*   * number of nodes. Which depends on matched prefix. */

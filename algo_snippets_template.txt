@@ -770,6 +770,164 @@ T count_inversions (vector<U>& ar, int n) {
 }
 endsnippet
 
+snippet dijkstra "Dijkstra (Single Source Shortest Path)" b
+/* Used to extract the shortest path from source(u) to destination(v) */
+/* Time complexity: O(V + E log V) */
+/* dijkstra<int> dij(g, n, --src); */
+/* dij.proc_tab(); */
+/* cout << dij.get_dist(--v) << '\n'; */
+/* auto path = dij.get_path(v); */
+template <typename T> 
+struct dijkstra { 
+  int n;
+  int src;
+  // Change this (inf) according to the question
+  const T inf = (T) 1e16;
+  vector<int> par, seen;
+  vector<T> dist;
+  vector<vector<array<int, 2>>> g;
+  dijkstra (vector<vector<array<int, 2>>> g, int n, int src) { 
+    this -> g = g;
+    this -> n = n;
+    this -> src = src;
+    // Remove this (par) if not needed
+    par.assign(n, -1);
+    seen.assign(n, false);
+    dist.assign(n, inf);
+  }
+  void proc_tab () { 
+    multiset<array<T, 2>> ms;
+    dist[src] = 0;
+    ms.insert({0, src});
+    while (!ms.empty()) { 
+      auto u = *ms.begin();
+      ms.erase(ms.begin());
+      if (!seen[u[1]]) { 
+        seen[u[1]] = true;
+        for (auto ch : g[u[1]]) { 
+          if (dist[u[1]] + ch[1] < dist[ch[0]]) { 
+            dist[ch[0]] = dist[u[1]] + ch[1];
+            /* Here saving the previous node as parent if this is giving less cost */
+            par[ch[0]] = u[1];
+            ms.insert({dist[ch[0]], ch[0]});
+          }
+        }
+      }
+    }
+  }
+  T get_dist (int dest) { 
+    return dist[dest];
+  }
+  vector<int> get_path (int dest) { 
+    vector<int> path;
+    for (int v = dest; v != -1; v = par[v]) { 
+      path.push_back(v + 1);
+    }
+    reverse(path.begin(), path.end());
+    return path;
+  }
+};
+endsnippet
+
+snippet spfa "Bellman ford (improved version)" b
+/* Improved version of Bellman Ford */
+/* Time complexity: On average O(m), worst case O(n * m) */
+template <typename T> 
+struct spfa { 
+  int n;
+  int src;
+  const T inf = (T) 1e16;
+  vector<T> dist;
+  vector<int> par, inque, cnt;
+  vector<vector<array<int, 2>>> g;
+  spfa (vector<vector<array<int, 2>>> g, int n, int src) { 
+    this -> g = g;
+    this -> n = n;
+    this -> src = src;
+    par.assign(n, -1);
+    cnt.assign(n, 0);
+    inque.assign(n, false);
+    dist.assign(n, inf);
+  }
+  void proc_tab () { 
+    queue<int> q;
+    dist[src] = 0;
+    q.push(src);
+    while (!q.empty()) { 
+      /* For neg-cycle detection */
+      int cyc_node = -1;
+      int u = q.front();
+      q.pop();
+      inque[u] = true;
+      for (auto ch : g[u]) { 
+        if (dist[u] + ch[1] < dist[ch[0]]) { 
+          dist[ch[0]] = dist[u] + ch[1];
+          if (!inque[ch[0]]) { 
+            q.push(ch[0]);
+            inque[ch[0]] = true;
+            /* IF NEGATIVE CYCLE INVOLVED, else remove the part */
+            /* change (n) to n - 1 if (1 based), else keep it as it is */
+            if (n < ++cnt[ch[0]]) { 
+              /* Negative cycle exists */
+              cyc_node = ch[0];
+              break;
+            }
+            /* IF NEGATIVE CYCLE NOT INVOLVED: In this case, the algorithm will break itself */
+          }
+        }
+      }
+      /* IF NEGATIVE CYCLE INVOLVED */
+      if (cyc_node == -1) { 
+        printf("No neg-cycle\n");
+      } else { 
+        /* If neg-path is needed then, change the func type from void to vector<int> */
+        int u = cyc_node;
+        for (int i = 0; i < n; ++i) { 
+          u = par[u];
+        }
+        vector<int> path;
+        for (int v = u; ; v = par[v]) { 
+          path.push_back(v);
+          if (1 < (int) path.size() and v == u) { 
+            break;
+          }
+        }
+        return path;
+      }
+    }
+  }
+  T get_dist (int dest) { 
+    return dist[dest];
+  }
+  /* Returns path of src to dest if neg cycle doesn't exist */
+  vector<int> get_path (int dest) { 
+    vector<int> path;
+    for (int v = dest; v != -1; v = par[v]) { 
+      path.push_back(v);
+    }
+    reverse(path.begin(), path.end());
+    return path;
+  }
+};
+endsnippet
+
+snippet floyd_warshall "Floyd Warshall (all pair shortest path)" b
+/* Time complexity: O(n ^ 3) */
+auto floyd_warshall = [&] () { 
+  /* init the (d) array, if there doesn't exists a path b/w u-v then set them to infinity */ 
+  const int inf = (int) 1e9;
+  for (int k = 1; k <= n; ++k) {
+    for (int i = 1; i <= n; ++i) { 
+      for (int j = 1; j <= n; ++j) { 
+       /* if there exists both of these path or not */
+        if (d[i][k] < inf and d[k][j] < inf) { 
+          d[i][j] = min(d[i][j], d[i][k] + d[k][j]);
+        }
+      }
+    }
+  }
+};
+endsnippet
 
 snippet lca "binary lifting (lca)" b
 /* binary_lifting bl(n, m, g); */
@@ -934,6 +1092,7 @@ vector<T> z_algo (string s) {
 endsnippet
 
 snippet manachers "Manacher's algo utility (string algo)" b
+/* Time complexity: O(N) */
 /* While solving this problem always try to solve this on the basis of the generated answer it is returning */
 /* Which means, always try to solve on the basis of converted string -> #a#b#a# */
 /* Return the length of a palindrome from left side, defining (i) as the middle of that palindrome*/

@@ -239,16 +239,12 @@ string to_binary (int leading_zeroes, T x) {
 endsnippet
 
 snippet dsu "Disjoint Set Union" b 
-/* disjoint_set<int> dsu; */
-/* siz.resize(n + 1); */
-/* par.resize(n + 1); */
-/* for (int u = 1; u <= n; ++u) { */
-/*   dsu.init(u); */
-/* } */
+/* disjoint_set<int> dsu(n + 1); */
 /* dsu.make_set(u, v); */
 vector<int> par, siz;
 template<typename T>
 struct disjoint_set { 
+  int n;
   T find_set(T v) {
     if (par[v] == v) {
       return v;
@@ -258,6 +254,14 @@ struct disjoint_set {
   void init(T v) {
     par[v] = v;
     siz[v] = 1;
+  }
+  disjoint_set (int n) { 
+    this -> n = n;
+    siz.assign(n + 1, 0);
+    par.assign(n + 1, 0);
+    for (int u = 1; u <= n; ++u) {
+      init(u);
+    }
   }
   void make_set(T a, T b) {
     a = find_set(a);
@@ -927,6 +931,78 @@ auto floyd_warshall = [&] () {
     }
   }
 };
+endsnippet
+
+snippet kruskals "Kruskals algo (MST)" b
+/* Before this, make sure to write the dsu algo */
+/* Time complexity: O(mlog(m)) - only for sorting, others done in constant time */
+disjoint_set<int> dsu(n + 1);
+auto kruskals = [&] () { 
+  long long min_cost = 0;
+  /* The edges must be sorted in asc according to their weights */
+  sort(p.begin(), p.end());
+  for (int i = 0; i < m; ++i) { 
+    /* p[i][0] = cost, p[i][1] = u, p[i][2] = v; */
+    if (dsu.find_set(p[i][1]) != dsu.find_set(p[i][2])) { 
+      min_cost += p[i][0];
+      dsu.make_set(p[i][1], p[i][2]);
+    }
+  }
+  return min_cost;
+};
+endsnippet
+
+snippet directed_cycle "Directed graph (cycle finding)" b
+  /* time complexity: O(N + M) and O(M) if only one component */
+  /* Detects cycle in a directed graph */
+  int cyc_end = -1;
+  int cyc_start = -1;
+  vector<int> color(n + 1), parent(n + 1);
+  auto dfs = y_combinator([&](auto dfs, int v) -> bool {
+    /* color gray */
+    color[v] = 1;
+    for (auto u : g[v]) { 
+      if (!color[u]) { 
+        parent[u] = v;
+        if (dfs(u)) { 
+          return true;
+        }
+      } else if (color[u] == 1) { 
+        cyc_start = u;
+        cyc_end = v;
+        return true;
+      }
+    }
+    /* color black */
+    color[v] = 2;
+    return false;
+  });  
+  auto print_path = [&] () { 
+    vector<int> path;
+    path.push_back(cyc_start);
+    for (int v = cyc_end; v != cyc_start; v = parent[v]) { 
+      path.push_back(v);
+    }
+    path.push_back(cyc_start);
+    reverse(path.begin(), path.end());
+    for (auto p : path) { 
+      printf("%d ", p);
+    }
+    printf("\n");
+  };
+  auto detect_cycle = [&] () { 
+    for (int v = 1; v <= n; ++v) { 
+      if (!color[v] and dfs(v)) { 
+        // Has a cycle
+        break;
+      }
+    }
+    if (cyc_start == -1) { 
+      return printf("No cycle\n"), 0;
+    }
+    return print_path(), 0;
+  };
+  detect_cycle();
 endsnippet
 
 snippet lca "binary lifting (lca)" b

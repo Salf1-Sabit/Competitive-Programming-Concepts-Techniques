@@ -26,6 +26,13 @@ array<int, 8> dx = {-2, -2, 2, 2, -1, 1, -1, 1};
 array<int, 8> dy = {-1, 1, -1, 1, 2, 2, -2, -2};
 endsnippet
 
+snippet set_cmp "set comparator lambda" b
+auto cmp = [&] (array<int, 2> e1, array<int, 2> e2) { 
+  return e1[0] >= e2[0];
+};
+set<array<int, 2>, decltype(cmp)> pq(cmp);
+endsnippet
+
 snippet lcm "Lcm Utility" b
 auto lcm = [&] (${1:long long} a, $1 b) { 
   return a / __gcd(a, b) * b;
@@ -152,6 +159,47 @@ struct sieve_util {
       }
     }
     return generated_prime;
+  }
+};
+endsnippet
+
+snippet linear_sieve "Linear Sieve Utility" b
+/* const int N = (int) 1e5; */
+/* linear_sieve sieve(N); */ 
+/* sieve.run_sieve(); */
+/* auto p = sieve.get_primes(); */
+/* sieve.gen_isPrime(); */
+int prime_n = 0;
+vector<bool> is_prime;
+struct linear_sieve {  
+  vector<int> p, lp;
+  /* lp[i] defines the lowest prime factor of i */
+  void run_sieve () { 
+    for (int i = 2; i <= prime_n; ++i) {
+      if (!lp[i]) {
+        lp[i] = i;
+        p.push_back(i);
+      }
+      for (int j = 0; i * 1LL * p[j] <= prime_n; ++j) {
+        lp[i * p[j]] = p[j];
+        if (p[j] == lp[i]) {
+          break;
+        }
+      }
+    }
+  }
+  linear_sieve (int sz) { 
+    prime_n = sz;
+    lp.resize(prime_n + 1, 0);
+  }
+  vector<int> get_primes () { 
+    return p;
+  }
+  void gen_isPrime () { 
+    is_prime.resize(prime_n + 1, false);
+    for (auto num : p) { 
+      is_prime[num] = true;
+    }
   }
 };
 endsnippet
@@ -833,86 +881,100 @@ struct dijkstra {
 };
 endsnippet
 
-snippet spfa "Bellman ford (improved version)" b
-/* Improved version of Bellman Ford */
-/* Time complexity: On average O(m), worst case O(n * m) */
-template <typename T> 
-struct spfa { 
-  int n;
-  int src;
-  const T inf = (T) 1e16;
-  vector<T> dist;
-  vector<int> par, inque, cnt;
-  vector<vector<array<int, 2>>> g;
-  spfa (vector<vector<array<int, 2>>> g, int n, int src) { 
-    this -> g = g;
-    this -> n = n;
-    this -> src = src;
-    par.assign(n, -1);
-    cnt.assign(n, 0);
-    inque.assign(n, false);
-    dist.assign(n, inf);
+snippet bellman_ford "Bellman ford" b
+/* Time complexity: O(V * E) */
+/* Add edges both ways for undirected graph */
+/* g.push_back({u, v, w}); */
+/* g.push_back({v, u, w}); */
+int cyc_node = -1;
+const int inf = (int) 1e9;
+vector<int> dist(n + 1, inf);
+vector<int> par(n + 1, -1);
+auto check_neg_cycle = [&] () { 
+  if (cyc_node == -1) { 
+    return printf("No neg cycle\n"), 0;
   }
-  void proc_tab () { 
+  int u = cyc_node;
+  for (int i = 1; i <= n; ++i) { 
+    u = par[u];
+  }
+  vector<int> path;
+  for (int cur = u; ; cur = par[cur]) { 
+    path.push_back(cur);
+    if (1 < (int) path.size() and cur == u) { 
+	  break;
+    }
+  }
+  reverse(path.begin(), path.end());
+  for (auto p : path) { 
+    printf("%d ", p);
+  }
+  printf("\n");
+  return 0;
+};
+auto bellman_ford = [&] (int src) { 
+  dist[src] = 0;
+  for (int i = 1; i <= n; ++i) { 
+    cyc_node = -1;
+    for (int j = 0; j < m; ++j) { 
+	  int u = g[j][0];
+	  int v = g[j][1];
+	  int w = g[j][2];
+	  if (dist[u] < inf) { 
+	    if (dist[u] + w < dist[v]) { 
+		  dist[v] = max(-inf, dist[u] + w);
+		  par[v] = u;
+		  cyc_node = v;
+	    }
+	  }
+    }
+    dbg("two", cyc_node);
+  }
+  check_neg_cycle();
+};
+bellman_ford(1);
+endsnippet
+
+snippet spfa "Bellman ford (improved version)" b
+  /* Shortest Path Faster Algorithm */
+  /* Improved version of Bellman Ford */
+  /* Used when negative weight is involed but negative cycle is not involved */
+  /* This can work faster in most of the cases */
+  /* Time complexity: On average O(m), worst case O(n * m) */
+  /* Change next 2 line to long long according to question */
+  const int inf = (int) 1e9;
+  vector<int> dist(n + 1, inf);
+  auto spfa = [&] (int src) { 
+    /* Take input in the form g[u].push_back({v, w}) */
     queue<int> q;
     dist[src] = 0;
     q.push(src);
+    bool neg_cycle = false;
+    inque[src] = true;
+    vector<int> cnt(n + 1);
+    vector<bool> inque(n + 1);
     while (!q.empty()) { 
-      /* For neg-cycle detection */
-      int cyc_node = -1;
       int u = q.front();
       q.pop();
-      inque[u] = true;
+      inque[u] = false;
       for (auto ch : g[u]) { 
         if (dist[u] + ch[1] < dist[ch[0]]) { 
           dist[ch[0]] = dist[u] + ch[1];
           if (!inque[ch[0]]) { 
             q.push(ch[0]);
             inque[ch[0]] = true;
-            /* IF NEGATIVE CYCLE INVOLVED, else remove the part */
-            /* change (n) to n - 1 if (1 based), else keep it as it is */
             if (n < ++cnt[ch[0]]) { 
-              /* Negative cycle exists */
-              cyc_node = ch[0];
-              break;
+              neg_cycle = true;
+              // negative cycle
             }
-            /* IF NEGATIVE CYCLE NOT INVOLVED: In this case, the algorithm will break itself */
           }
         }
       }
-      /* IF NEGATIVE CYCLE INVOLVED */
-      if (cyc_node == -1) { 
-        printf("No neg-cycle\n");
-      } else { 
-        /* If neg-path is needed then, change the func type from void to vector<int> */
-        int u = cyc_node;
-        for (int i = 0; i < n; ++i) { 
-          u = par[u];
-        }
-        vector<int> path;
-        for (int v = u; ; v = par[v]) { 
-          path.push_back(v);
-          if (1 < (int) path.size() and v == u) { 
-            break;
-          }
-        }
-        return path;
+      if (neg_cycle) {
+        break;
       }
     }
-  }
-  T get_dist (int dest) { 
-    return dist[dest];
-  }
-  /* Returns path of src to dest if neg cycle doesn't exist */
-  vector<int> get_path (int dest) { 
-    vector<int> path;
-    for (int v = dest; v != -1; v = par[v]) { 
-      path.push_back(v);
-    }
-    reverse(path.begin(), path.end());
-    return path;
-  }
-};
+  };
 endsnippet
 
 snippet floyd_warshall "Floyd Warshall (all pair shortest path)" b
@@ -1006,6 +1068,7 @@ snippet directed_cycle "Directed graph (cycle finding)" b
 endsnippet
 
 snippet lca "binary lifting (lca)" b
+/* Time complexity: Build O(nlog(n)), Query O(log(n)); */
 /* binary_lifting bl(n, m, g); */
 /* bl.lca(u, v); */
 /* bl.get_dist(u, v); */

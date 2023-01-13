@@ -92,6 +92,62 @@ vector<T> factorize(T n) {
 }
 endsnippet
 
+snippet fast_factorization "Fast Factorization (Number theory)" b
+/* Time complexity: O(n) for sieve + log(n) for each get_factors() query */
+/* fast_factorize<int> ff((int) 1e5); */
+/* auto factors = ff.get_factors(n); */
+int prime_n = 0;
+vector<int> lp;
+vector<bool> is_prime;
+struct linear_sieve {  
+  vector<int> p;
+  void run_sieve () { 
+    for (int i = 2; i <= prime_n; ++i) {
+      if (!lp[i]) {
+        lp[i] = i;
+        p.push_back(i);
+      }
+      for (int j = 0; i * 1LL * p[j] <= prime_n; ++j) {
+        lp[i * p[j]] = p[j];
+        if (p[j] == lp[i]) {
+          break;
+        }
+      }
+    }
+  }
+  linear_sieve (int sz) { 
+    prime_n = sz;
+    lp.resize(prime_n + 1, 0);
+  }
+  vector<int> get_primes () { 
+    return p;
+  }
+  void gen_isPrime () { 
+    is_prime.resize(prime_n + 1, false);
+    for (auto num : p) { 
+      is_prime[num] = true;
+    }
+  }
+};
+
+template <typename T>
+struct fast_factorize { 
+  fast_factorize (int n) { 
+    linear_sieve sieve(n); 
+    sieve.run_sieve();
+  }
+  /* change this set<T> to multiset<T> according to the question */
+  multiset<T> get_factors (int x) { 
+    multiset<T> factors;
+    while (x != 1) { 
+      factors.insert(lp[x]);
+      x /= lp[x];
+    }
+    return factors;
+  }
+};
+endsnippet
+
 snippet ncr "Binomial Coefficients" b
 /* bin_coeff<int> bcoef(N, M); */
 /* bcoef.nCr(n, r); */
@@ -1136,6 +1192,52 @@ struct binary_lifting {
 };
 endsnippet
 
+snippet max_flow "Max-Flow Algo (Graphs)" b
+/* 1. Before starting, fill the 2D capacity array with each edges capacity */
+/* 2. And, fill the adjacency list (g) */
+/* 3. Initialize (inf) variable */
+vector<vector<int>> g(n + 1);
+vector<vector<int>> capacity(n + 1, vector<int>(n + 1));
+auto bfs = [&](int s, int t, vector<int>& parent) {
+  fill(parent.begin() + 1, parent.end(), -1);
+  parent[s] = -2;
+  queue<pair<int, int>> q;
+  q.push({s, inf});
+  while (!q.empty()) {
+    int cur = q.front().first;
+    int flow = q.front().second;
+    q.pop();
+    for (int next : g[cur]) {
+      if (parent[next] == -1 && capacity[cur][next]) {
+        parent[next] = cur;
+        int new_flow = min(flow, capacity[cur][next]);
+        if (next == t) { 
+          return new_flow;
+        }
+        q.push({next, new_flow});
+      }
+    }
+  }
+  return 0;
+};
+auto maxflow = [&](int s, int t) {
+  int flow = 0;
+  vector<int> parent(n + 1);
+  int new_flow;
+  while (new_flow = bfs(s, t, parent)) {
+    flow += new_flow;
+    int cur = t;
+    while (cur != s) {
+      int prev = parent[cur];
+      capacity[prev][cur] -= new_flow;
+      capacity[cur][prev] += new_flow;
+      cur = prev;
+    }
+  }
+  return flow;
+};
+cout << maxflow(source, sink) << '\n';
+endsnippet
 
 snippet kmp "Knuth Morris Pratt Algo (strings)" b
 /* Total complexity: O(n + m) */
@@ -1477,3 +1579,26 @@ auto is_bst = y_combinator([=](auto is_bst, node *root) -> bool {
 });  
 endsnippet
 
+snippet file_utilities "Write & read from files" b
+/* create file stream to load a file*/
+fstream newfile;
+/* open the file */
+newfile.open("tpoint.txt",ios::out);  // open a file to perform write operation using file object
+/* Write in file */
+if(newfile.is_open()) //checking whether the file is open
+{
+  newfile<<"Tutorials point \n";   //inserting text
+  newfile.close();    //close the file object
+}
+
+/* open the file */
+newfile.open("tpoint.txt",ios::in); //open a file to perform read operation using file object
+/* Read from file */
+if (newfile.is_open()){   //checking whether the file is open
+  string tp;
+  while(getline(newfile, tp)){ //read data from file object and put it into string.
+     cout << tp << "\n"; //print the data of the string
+  }
+  newfile.close(); //close the file object.
+}
+endsnippet

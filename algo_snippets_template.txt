@@ -45,6 +45,44 @@ auto inside = [&] (int row, int col) {
 };
 endsnippet
 
+snippet string_to_int "String to integer utility" b
+/* Converts a string to an integer */
+template <typename T>
+T str_to_int (string x) { 
+  T val = 0;
+  for (auto d : x) { 
+    val = (val * 10) + ((d - '0') % 10);
+  }
+  return val;
+}
+endsnippet
+
+snippet count_digits "Count digits utility" b
+/* Return the digit count of an integer */
+template <typename T>
+T count_digits (T x) { 
+  T cnt = 0;
+  while (x) { 
+    x /= 10;
+    ++cnt;
+  }
+  return cnt;
+}
+endsnippet
+
+snippet distinct_digits "Distinct digits utility" b
+/* Returns total number of distinct digits in a integer */
+template <typename T>
+T distinct_digits (T x) { 
+  set<T> st;
+  while (x) { 
+    st.insert(x % 10);
+    x /= 10LL;
+  }
+  return (T) st.size();
+}
+endsnippet
+
 snippet intersect "Two objects intersection utility" b
 /* intersect<int>(a, b, c, d) 
  * Note : Used for determining if two objects intersects or not.
@@ -55,10 +93,36 @@ bool intersect (int a, int b, int c, int d) {
   return xOverlap > (T) 0;
 }
 endsnippet
+
+snippet kadanes_algo "Finds the largest subarray sum in O(n)" b
+/* Largest sum in O(n) - DP */
+/* There are 2 cases: */ 
+/* When curSum <= 0: */ 
+/*   When some positive number adds to the sum: */ 
+/*     This is always profit. */
+/*   When some negative number adds to the sum: */ 
+/*     This is also always profit. Because, this is atleast better then the only negative number. */
+/* When 0 < curSum: */ 
+/*   When some positive number adds to the sum: */ 
+/*     This is always bad. (Worse than the only negative number); */
+/*   When some negative number adds to the sum: */ 
+/*     This is also always bad. (Worse than the only negative number); */
+/* This is why always make the sum = 0, when it becomes negative. */
+auto kadane = [&] () { 
+  long long curs = 0;
+  long long mx = (long long) -1e17;
+  for (int i = 0; i < n - 1; ++i) { 
+    mx = max(mx, (curs += a[i]));
+    curs = curs < 0 ? 0 : curs;
+  }
+  return mx;
+};
+endsnippet
+
 snippet binary_expo "Power Algo" b
 /* binary_expo<int>(2, n - 1, m); */
 template<typename T, typename X>
-T Binary_Expo (T val, T power, X m) {
+T binary_expo (T val, T power, X m) {
   T output = 1;
   while (power) {
     if (power & 1) {
@@ -182,6 +246,42 @@ struct bin_coeff {
     return (fact[N] * 1LL * inv((fact[R] * 1LL * fact[N - R]) % m, m - 2)) % m;
   }
 };
+endsnippet
+
+snippet matrix_mult "Matrix Multiplication utility" b
+/* Time complexity: O(matrix_x_row_size * matrix_y_col_size * matrix_x_col_size) 
+ * matrix_mult <data_type> (matrix_x, matrix_y, mod_val) */
+template <typename T>
+vector<vector<T>> matrix_mult (vector<vector<T>> matx, vector<vector<T>> maty, T m) { 
+  int xrow_size = matx.size();
+  int yrow_size = maty.size();
+  int xcol_size = matx[0].size();
+  int ycol_size = maty[0].size();
+  vector<vector<T>> ret_mat(xcol_size, vector<T> (yrow_size));
+  for (int xr = 0; xr < xrow_size; ++xr) { 
+    for (int yc = 0, xc = 0; yc < ycol_size; ++yc, ++xc) { 
+      for (int i0 = 0; i0 < xcol_size; ++i0) { 
+        ret_mat[xr][xc] += ((matx[xr][i0] * 1LL * maty[i0][yc]) % m);
+      }
+    }
+  }
+  return ret_mat;
+}
+endsnippet
+
+snippet fermat "Femat's primality test" b
+bool fermat (int n, int iter=5) {
+  if (n < 4) { 
+    return n == 2 || n == 3;
+  }
+  for (int i = 0; i < iter; i++) {
+    int a = 2 + rand() % (n - 3);
+    if (Binary_Expo<int>(a, n - 1, n) != 1) { 
+      return false;
+    }
+  }
+  return true;
+}
 endsnippet
 
 snippet sieve "Sieve Utility" b
@@ -413,7 +513,7 @@ struct fenwick_tree {
       int idx = i;
       idx = idx + (idx & -idx);
       if (idx <= n) { 
-      tree[idx] += tree[i];
+        tree[idx] += tree[i];
       }
     }
   }
@@ -1458,7 +1558,7 @@ snippet string_hash "String hashing utility" b
 /* Imp: An crucial property of hash function, if hash value of all equal string (in length also) are retrieved from */ 
 /*      a prefix sum or something. Then, if we multiply all of them with a particular powers in descending order to balance them and then mod them, then we */
 /*      get all the similar hash values. */
-*      Example: cur = (cur * 1LL * p_pow[n - j]) % mod; */
+/*      Example: cur = (cur * 1LL * p_pow[n - j]) % mod; */
 template <typename T> 
 struct string_hash { 
   int n;

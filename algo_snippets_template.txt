@@ -212,6 +212,23 @@ struct fast_factorize {
 };
 endsnippet
 
+snippet ncr_triv "nCr trivial version" b
+/* Used when there's no mod used 
+ * Time complexity: O(k) */
+template <typename T>
+T ncr_triv (T n, T k) { 
+  T ncr = 1;
+  if (n - k < k) { 
+    k = n - k;
+  }
+  for (T i = 0; i < k; ++i) { 
+    ncr *= (n - i);
+    ncr /= (i + 1);
+  }
+  return ncr;
+}
+endsnippet
+
 snippet ncr "Binomial Coefficients" b
 /* bin_coeff<int> bcoef(N, M); */
 /* bcoef.nCr(n, r); */
@@ -269,18 +286,105 @@ vector<vector<T>> matrix_mult (vector<vector<T>> matx, vector<vector<T>> maty, T
 }
 endsnippet
 
-snippet fermat "Femat's primality test" b
-bool fermat (int n, int iter=5) {
-  if (n < 4) { 
-    return n == 2 || n == 3;
+snippet miller_rabin "Miller Rabin primality test utility" b
+template<typename T, typename X>
+T binary_expo (T val, T power, X m) {
+  T output = 1;
+  while (power) {
+    if (power & 1) {
+      output = T((output * 1LL * val) % m);
+    }
+    val = (val * 1LL * val) % m;
+    power >>= 1;
   }
-  for (int i = 0; i < iter; i++) {
-    int a = 2 + rand() % (n - 3);
-    if (Binary_Expo<int>(a, n - 1, n) != 1) { 
+  return output;
+}
+
+template <typename T>
+bool check_composite(T n, T a, T d, T s) {
+  T x = binary_expo<T>(a, d, n);
+  if (x == 1 or x == n - 1) { 
+    return false;
+  }
+  for (T r = 1; r < s; r++) {
+    x = x * x % n;
+    if (x == n - 1) { 
       return false;
     }
   }
   return true;
+};
+
+template <typename T>
+bool miller_rabin (T n) { 
+  if (n < 2) { 
+    return false;
+  }
+  T r = 0, d = n - 1;
+  while ((d & 1) ^ 1) {
+    d >>= 1, r++;
+  }
+  for (T a : {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37}) {
+    if (n == a) { 
+      return true;
+    }
+    if (check_composite(n, a, d, r)) { 
+      return false;
+    }
+  }
+  return true;
+}
+endsnippet
+
+snippet fermat "Femat's primality test" b
+template <typename T>
+bool fermat (T n, int iter=5) {
+  if (n < 4) { 
+    return n == 2 or n == 3;
+  }
+  for (int i = 0; i < iter; i++) {
+    T a = 2 + rand() % (n - 3);
+    if (binary_expo<T>(a, n - 1, n) != 1) { 
+      return false;
+    }
+  }
+  return true;
+}
+endsnippet
+
+snippet ultra_sieve "Ultra memory optimized sieve utility" b
+/* 1. This is (Ultra Memory Efficient) Sieve */
+const int prime_limit = (int) 1e6;
+int mark[prime_limit / 2 / 32 + 7];
+/* What is being done?
+ *   - Here we're dividing size by 2 because of eliminating
+ *       the odd numbers. 
+ *   - After that, dividing by 32 because assuming 
+ *       every integer as a 32 bit block and using it as a mask
+ *       of bits for checking a number corresponding to that block. 
+ * TODO: # set the (prime_limit) variable at first
+ *       # call (the ultra_sieve()) function
+ *       # Check if a number if prime or not: 
+ *         - is_prime(x) */
+
+#define is_set(x) (mark[x / 2 / 32] & (1 << ((x / 2) % 32)))
+#define set_bit(x) (mark[x / 2 / 32] |= (1 << ((x / 2) % 32)))
+
+template <typename T>
+bool is_prime (T x) { 
+  return x == 2 or ((x & 1) and !is_set(x));
+}
+
+void ultra_sieve () { 
+  set_bit(0);
+  set_bit(1);
+  for (int i = 3; i * i <= prime_limit; i += 2) { 
+    if (!is_set(i)) { 
+      for (int j = i * i; j <= prime_limit; j += i + i) { 
+        set_bit(j);
+      }
+    }
+  }
 }
 endsnippet
 
@@ -796,6 +900,106 @@ struct segment_tree {
 };
 endsnippet
 
+snippet 2D_segment_tree "2D segment tree utilities" b
+/** 1. _2D_segment_tree<long long> _2D_seg_tree(a);
+  * 2. _2D_seg_tree.buildx(1, 0, n - 1);
+  * 3. Note : Make sure that the segment tree type and the 
+       vector type must mathc. E.g If, struct _2D_segment_tree <long long> 
+	   then, vector must be vector<long long>
+  *	4. Note : While using index for answer. Make sure to use them as (0 based)
+  * 5. now, you're good to go.
+ **/
+template <typename T> 
+struct _2D_segment_tree { 
+  int n, m; 
+  vector<vector<T>> a, t;
+  _2D_segment_tree (vector<vector<T>> a) { 
+    this -> a = a;
+    this -> n = (int) a.size();
+    this -> m = (int) a[0].size();
+    t.assign(n << 2, vector<T>(m << 2));
+  }
+  void build_y (int vx, int lx, int rx, int vy, int ly, int ry) {
+    if (ly == ry) {
+      if (lx == rx) { 
+        t[vx][vy] = a[lx][ly];
+      } else { 
+        t[vx][vy] = t[(vx << 1)][vy] + t[(vx << 1) + 1][vy];
+      }
+    } else {
+      int my = (ly + ry) >> 1;
+      build_y(vx, lx, rx, (vy << 1), ly, my);
+      build_y(vx, lx, rx, (vy << 1) + 1, my + 1, ry);
+      t[vx][vy] = t[vx][(vy << 1)] + t[vx][(vy << 1) + 1];
+    }
+  }
+  /* Prepares the _2D segment tree 
+   * _2D_seg_tree.build_x(1, 0, n - 1); */
+  void build_x (int vx, int lx, int rx) {
+    if (lx != rx) {
+      int mx = (lx + rx) >> 1;
+      build_x((vx << 1), lx, mx);
+      build_x((vx << 1) + 1, mx + 1, rx);
+    }
+    build_y(vx, lx, rx, 1, 0, m - 1);
+  }
+  T sum_y (int vx, int vy, int tly, int try_, int ly, int ry) {
+    if (ly > ry) { 
+      return (T) 0;
+    }
+    if (ly == tly && try_ == ry) { 
+      return t[vx][vy];
+    }
+    int tmy = (tly + try_) >> 1;
+    return sum_y(vx, (vy << 1), tly, tmy, ly, min(ry, tmy))
+       + sum_y(vx, (vy << 1) + 1, tmy + 1, try_, max(ly, tmy + 1), ry);
+  }
+  /* Returns the sum of a sub-matrix from, 
+   * [(left_x, left_y) top_left corner] to [(right_x, right_y) bottom_right corner]
+   * _2D_seg_tree.sum_x(1, 0, n - 1, --left_x, --right_x, --left_y, --right_y) -> 0 based indexing */
+  T sum_x (int vx, int tlx, int trx, int lx, int rx, int ly, int ry) {
+    if (lx > rx) { 
+      return 0;
+    }
+    if (lx == tlx && trx == rx) { 
+      return sum_y(vx, 1, 0, m - 1, ly, ry);
+    }
+    int tmx = (tlx + trx) >> 1;
+    return sum_x((vx << 1), tlx, tmx, lx, min(rx, tmx), ly, ry)
+       + sum_x((vx << 1) + 1, tmx + 1, trx, max(lx, tmx + 1), rx, ly, ry);
+  }
+  void update_y (int vx, int lx, int rx, int vy, int ly, int ry, int x, int y, T new_val) {
+    if (ly == ry) {
+      if (lx == rx) { 
+        t[vx][vy] = new_val;
+      } else { 
+        t[vx][vy] = t[(vx << 1)][vy] + t[(vx << 1) + 1][vy];
+      }
+    } else {
+      int my = (ly + ry) >> 1;
+      if (y <= my) { 
+        update_y(vx, lx, rx, (vy << 1), ly, my, x, y, new_val);
+      } else { 
+        update_y(vx, lx, rx, (vy << 1) + 1, my + 1, ry, x, y, new_val);
+      }
+      t[vx][vy] = t[vx][(vy << 1)] + t[vx][(vy << 1) + 1];
+    }
+  }
+  /* Updates a particular cell of the matrix - (x_axis, y_axis)
+   * _2D_seg_tree.update_x(1, 0, n - 1, --left_x, --left_y, new_val); */
+  void update_x (int vx, int lx, int rx, int x, int y, T new_val) {
+    if (lx != rx) {
+      int mx = (lx + rx) >> 1;
+      if (x <= mx) { 
+        update_x((vx << 1), lx, mx, x, y, new_val);
+      } else { 
+        update_x((vx << 1) + 1, mx + 1, rx, x, y, new_val);
+      }
+    }
+    update_y(vx, lx, rx, 1, 0, m - 1, x, y, new_val);
+  }
+};
+endsnippet
 
 snippet lazy_propagation "Lazy Propagation" b
 /** 1. struct lazy_propagation <int64_t>lazy_prop(a);

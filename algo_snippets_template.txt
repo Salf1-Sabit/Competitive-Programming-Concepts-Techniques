@@ -45,6 +45,27 @@ auto inside = [&] (int row, int col) {
 };
 endsnippet
 
+snippet mod_utility "mod utility" b
+const int mod = (int) 1e9 + 7;
+int add_mod (int a, int b) { 
+  int res = (a + b) % mod;
+  res += (res < 0 ? mod : 0);
+  return res;
+}
+
+int sub_mod (int a, int b) { 
+  int res = (a - b) % mod;
+  res += (res < 0 ? mod : 0);
+  return res;
+}
+
+int mult_mod (int a, int b) { 
+  int res = (a * 1LL * b) % mod;
+  res += (res < 0 ? mod : 0);
+  return res;
+}
+endsnippet
+
 snippet string_to_int "String to integer utility" b
 /* Converts a string to an integer */
 template <typename T>
@@ -1548,7 +1569,7 @@ snippet kmp "Knuth Morris Pratt Algo (strings)" b
 /* Application (string problems) : */ 
 /*  1. Used to extract matched positions */
 /*  2. Used to know if we have a match or not */
-/* kmp<int> km(s, t); */
+/* kmp<int> km(full_string, pattern_to_search_for); */
 /* auto ids = km.pos(); */
 template <typename T> 
 struct kmp {

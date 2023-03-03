@@ -1,0 +1,60 @@
+/* Code for quering hash of subtrings of string S S[l ... r] */
+
+#include <bits/stdc++.h>
+using namespace std;
+
+template<typename T, typename X>
+T binary_expo (T val, T power, X m) {
+  T output = 1;
+  while (power) {
+    if (power & 1) {
+      output = T((output * 1LL * val) % m);
+    }
+    val = (val * 1LL * val) % m;
+    power >>= 1;
+  }
+  return output;
+}
+
+int main () {
+  ios::sync_with_stdio(false);
+  cin.tie(0);
+
+  string s;
+  cin >> s;
+
+  /* This block of code hashes the string S*/
+  int p = 31;
+  int n = (int) s.size();
+  vector<int> pref_hash(n);
+  pref_hash[0] = (s[0] - 'a') + 1;
+  vector<int> p_pow(n), inv(n);
+  p_pow[0] = inv[0] = 1;
+  const int mod = (int) 1e9 + 7;
+  for (int i = 1; i < n; i++) { 
+    p_pow[i] = (p_pow[i - 1] * 1LL * p) % mod;
+    inv[i] = binary_expo<int>(p_pow[i], mod - 2, mod);
+    pref_hash[i] = (pref_hash[i - 1] + (s[i] - 'a' + 1) * 1LL * p_pow[i]) % mod;
+  }
+
+  /* This function returns the hash of the substring of string s
+   * This function uses 0 based indesing */
+  auto substring_hash = [&] (int l, int r) { 
+    int res = pref_hash[r];
+    if (0 < l) { 
+      res -= pref_hash[l - 1];
+    }
+    res = (res * 1LL * inv[l]) % mod;
+    return res;
+  };
+
+  /* This block of code quering for each substring hash*/
+  int q;
+  cin >> q;
+  while (q--) { 
+    int l, r;
+    cin >> l >> r;
+    cout << substring_hash(--l, --r) << '\n';
+  }
+  return 0;
+}

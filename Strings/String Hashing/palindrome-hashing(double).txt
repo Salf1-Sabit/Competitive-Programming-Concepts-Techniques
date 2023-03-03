@@ -1,0 +1,144 @@
+/* Code for palindrome hashing (double) */
+
+#include <bits/stdc++.h>
+using namespace std;
+
+const int mod = (int) 1e9 + 7;
+int add_mod (int a, int b) { 
+  int res = (a + b) % mod;
+  res += (res < 0 ? mod : 0);
+  return res;
+}
+
+int mult_mod (int a, int b) { 
+  int res = (a * 1LL * b) % mod;
+  res += (res < 0 ? mod : 0);
+  return res;
+}
+
+template<typename T, typename X>
+T binary_expo (T val, T power, X m) {
+  T output = 1;
+  while (power) {
+    if (power & 1) {
+      output = T((output * 1LL * val) % m);
+    }
+    val = (val * 1LL * val) % m;
+    power >>= 1;
+  }
+  return output;
+}
+
+int main () {
+  /* ios::sync_with_stdio(false); */
+  /* cin.tie(0); */
+
+  string s;
+  cin >> s;
+
+  /* This whole block is for prefix palindrome (ends) */
+  int p1 = 31, p2 = 53;
+  int n = (int) s.size();
+  vector<int> pref_hash1(n);
+  vector<int> pref_hash2(n);
+  pref_hash1[0] = (s[0] - 'a') + 1;
+  pref_hash2[0] = (s[0] - 'a') + 1;
+  vector<int> pref_pow1(n), pref_inv1(n);
+  vector<int> pref_pow2(n), pref_inv2(n);
+  pref_pow1[0] = pref_inv1[0] = 1;
+  pref_pow2[0] = pref_inv2[0] = 1;
+  for (int i = 1; i < n; i++) { 
+    pref_pow1[i] = (pref_pow1[i - 1] * 1LL * p1) % mod;
+    pref_pow2[i] = (pref_pow2[i - 1] * 1LL * p2) % mod;
+    pref_inv1[i] = binary_expo<int>(pref_pow1[i], mod - 2, mod);
+    pref_inv2[i] = binary_expo<int>(pref_pow2[i], mod - 2, mod);
+    pref_hash1[i] = add_mod(pref_hash1[i - 1], mult_mod((s[i] - 'a' + 1), pref_pow1[i]));
+    pref_hash2[i] = add_mod(pref_hash2[i - 1], mult_mod((s[i] - 'a' + 1), pref_pow2[i]));
+  }
+  auto pref_substring_hash1 = [&] (int l, int r) { 
+    int res = pref_hash1[r];
+    if (0 < l) { 
+      res -= pref_hash1[l - 1];
+    }
+    res = mult_mod(res, pref_inv1[l]);
+    return res;
+  };
+  auto pref_substring_hash2 = [&] (int l, int r) { 
+    int res = pref_hash2[r];
+    if (0 < l) { 
+      res -= pref_hash2[l - 1];
+    }
+    res = mult_mod(res, pref_inv2[l]);
+    return res;
+  };
+  /* This whole block is for prefix palindrome (ends) */
+
+  /* This whole block is for suffix palindrome (starts) */
+  vector<int> suff_hash1(n);
+  vector<int> suff_hash2(n);
+  suff_hash1[n - 1] = (s[n - 1] - 'a') + 1;
+  suff_hash2[n - 1] = (s[n - 1] - 'a') + 1;
+  vector<int> suff_pow1(n), suff_inv1(n);
+  vector<int> suff_pow2(n), suff_inv2(n);
+  suff_pow1[n - 1] = suff_inv1[n - 1] = 1;
+  suff_pow2[n - 1] = suff_inv2[n - 1] = 1;
+  for (int i = n - 2; ~i; --i) { 
+    suff_pow1[i] = (suff_pow1[i + 1] * 1LL * p1) % mod;
+    suff_pow2[i] = (suff_pow2[i + 1] * 1LL * p2) % mod;
+    suff_inv1[i] = binary_expo<int>(suff_pow1[i], mod - 2, mod);
+    suff_inv2[i] = binary_expo<int>(suff_pow2[i], mod - 2, mod);
+    suff_hash1[i] = add_mod(suff_hash1[i + 1], mult_mod((s[i] - 'a' + 1), suff_pow1[i]));
+    suff_hash2[i] = add_mod(suff_hash2[i + 1], mult_mod((s[i] - 'a' + 1), suff_pow2[i]));
+  }
+  auto suff_substring_hash1 = [&] (int l, int r) { 
+    int res = suff_hash1[l];
+    if (r < n - 1) { 
+      res -= suff_hash1[r + 1];
+    }
+    res = mult_mod(res, suff_inv1[r]);
+    return res;
+  };
+  auto suff_substring_hash2 = [&] (int l, int r) { 
+    int res = suff_hash2[l];
+    if (r < n - 1) { 
+      res -= suff_hash2[r + 1];
+    }
+    res = mult_mod(res, suff_inv2[r]);
+    return res;
+  };
+  /* This whole block is for suffix palindrome (ends) */
+
+  /* Query Section 
+   * Which takes left and right position and 
+   * outputs the hashes of that particular substring */
+  int q;
+  cin >> q;
+  while (q) { 
+    /* Range of prefix substrig */
+    int pref_l, pref_r;
+    cin >> pref_l >> pref_r;
+    --pref_l, --pref_r;
+
+    /* Range of suffix substrig */
+    int suff_l, suff_r;
+    cin >> suff_l >> suff_r;
+    --suff_l, --suff_r;
+
+    /* Outputing hashes of prefix */
+    int pref_l1 = pref_substring_hash1(pref_l, pref_r);
+    int pref_l2 = pref_substring_hash2(pref_l, pref_r);
+
+    /* Outputing hashes of suffix */
+    int suff_r1 = suff_substring_hash1(suff_l, suff_r);
+    int suff_r2 = suff_substring_hash2(suff_l, suff_r);
+
+    /* Ouput of pref_hashes */
+    cerr << "pref_hash1(" << pref_l << ", " << pref_r << "): " << pref_l1 << '\n';
+    cerr << "pref_hash2(" << pref_l << ", " << pref_r << "): " << pref_l2 << '\n';
+
+    /* Ouput of suff_hashes */
+    cerr << "suff_hash1(" << suff_l << ", " << suff_r << "): " << suff_r1 << '\n';
+    cerr << "suff_hash2(" << suff_l << ", " << suff_r << "): " << suff_r2 << '\n';
+  }
+  return 0;
+}

@@ -1,3 +1,6 @@
+/* Problem name: C.Unlucky Numbers
+ * Problem link: https://codeforces.com/contest/1808/problem/C */
+
 #include <bits/stdc++.h> 
 using namespace std;
 

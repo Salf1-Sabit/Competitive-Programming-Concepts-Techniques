@@ -66,6 +66,56 @@ int mult_mod (int a, int b) {
 }
 endsnippet
 
+snippet string_sum "String sum utility" b
+/* Time complexity: O(2 * max(|a|, |b|)) 
+ * Step 1: string_sum (a, b) */
+string string_sum (string a, string b) { 
+  if ((int) a.size() < (int) b.size()) { 
+    swap(a, b);
+  }
+  string zeroes = "";
+  int n = (int) a.size();
+  while ((int) zeroes.size() + (int) b.size() != n) { 
+    zeroes += "0";
+  }
+  b = zeroes + b;
+  short carry = 0;
+  string cur_row;
+  for (int iab = n - 1; ~iab; --iab) { 
+    int a_val = a[iab] - '0';
+    int b_val = b[iab] - '0';
+    short tmp_sum = a_val + b_val + carry;
+    cur_row.push_back(tmp_sum % 10 + '0');
+    carry = tmp_sum / 10;
+  }
+  reverse(cur_row.begin(), cur_row.end());
+  return cur_row;
+}
+endsnippet
+
+snippet string_multiplication "String multiplication utility" b
+/* Time complexity: O(2 * max(|a|, |b|)) 
+ * Step 1: string_multiply (a, b) */
+string string_multiply (string a, string b) { 
+  if (a == "0" or b == "0"){
+    return "0";
+  }
+  int carry = 0;
+  string product;
+  int m = a.size() - 1;
+  int n = b.size() - 1;
+  for (int i = 0; i <= m+n or carry; ++i) {
+    for (int j = max(0, i - n); j <= min(i, m); ++j) { 
+      carry += (a[m - j] - '0') * (b[n - i + j] - '0');
+    }
+    product += carry % 10 + '0';
+    carry /= 10;
+  }
+  reverse(product.begin(), product.end());
+  return product;
+}
+endsnippet
+
 snippet string_to_int "String to integer utility" b
 /* Converts a string to an integer */
 template <typename T>
@@ -101,6 +151,33 @@ T distinct_digits (T x) {
     x /= 10LL;
   }
   return (T) st.size();
+}
+endsnippet
+
+snippet range_and "Returns range AND between (L, R)" b
+/* Returns the range and between (L, R) 
+ * Time complexity: O(log(max(L, R))) */
+template <typename T> 
+T range_and (T left, T right) { 
+  T rng_and = 0;
+  /* While both of the numbers are positive keep going */
+  while (left and right) { 
+    T msb_left = __lg(left);
+    T msb_right = __lg(right);
+    /* If msb of both of the number are same then, 
+     * this msb contributes to the answer, and get subtracted 
+     * from both of the numbers.
+     * Otherwise, there is no more common bit between them */
+    if (msb_left == msb_right) { 
+      long long common_msb_power = ((T) 1 << msb_left);
+      rng_and += common_msb_power;
+      left -= common_msb_power;
+      right -= common_msb_power;
+    } else { 
+      break;
+    }
+  }
+  return rng_and;
 }
 endsnippet
 
@@ -235,7 +312,8 @@ endsnippet
 
 snippet ncr_triv "nCr trivial version" b
 /* Used when there's no mod used 
- * Time complexity: O(k) */
+ * Time complexity: O(k) 
+ * For-use: ncr_triv<int>(n, r) */
 template <typename T>
 T ncr_triv (T n, T k) { 
   T ncr = 1;
@@ -1564,6 +1642,20 @@ auto maxflow = [&](int s, int t) {
 cout << maxflow(source, sink) << '\n';
 endsnippet
 
+snippet valid_brack_seq "Valid bracket sequence checker (strings)" b
+bool is_valid_brack_seq (string s) {
+   int brack_counter = 0;
+   for (auto c : s) {
+     brack_counter += c == '(';
+     brack_counter -= c == ')';
+     if (brack_counter < 0) {
+       return false;
+     }
+   }
+   return !brack_counter;
+}
+endsnippet
+
 snippet kmp "Knuth Morris Pratt Algo (strings)" b
 /* Total complexity: O(n + m) */
 /* Application (string problems) : */ 
@@ -1925,5 +2017,36 @@ if (newfile.is_open()){   //checking whether the file is open
      cout << tp << "\n"; //print the data of the string
   }
   newfile.close(); //close the file object.
+}
+endsnippet
+
+#--------------------------------- bitmasking -----------------------------------#
+
+snippet gen_nCr "Generates all possible masks for a list for a specific bit count" b
+/* Generates all possible masks with needed set bits count 
+ * Set values of NCR below 
+ * Step 1: gen(first_pos, default_mask_value) 
+ *   Exampele: gen(0, 0) */
+
+// This vector contains all the generated masks 
+vector<int> masks; // Alert:: change type e.g. <long long> masks
+int last_pos = N, need_bits = R;
+
+void gen (int pos, int mask) { // Alert:: change type, e.g. long long mask
+  int set_bits = __builtin_popcount(mask);
+  if (set_bits == need_bits) { 
+    // if mask has needed set bits, take it
+    masks.push_back(mask); 
+    return;
+  }
+  if (pos == last_pos) { 
+    // if reaches the (last_bit + 1)th bit then, return
+    return;
+  }
+  for (int p = pos; p < last_pos; ++p) { 
+    /* Turn on the pth bit of the mask and 
+     * then, call for the next state */
+    gen(p + 1, mask | (1 << p)); // Alert:: change type, e.g. (1LL)
+  }
 }
 endsnippet

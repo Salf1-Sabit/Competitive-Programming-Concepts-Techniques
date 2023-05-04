@@ -47,6 +47,7 @@ endsnippet
 
 snippet mod_utility "mod utility" b
 const int mod = (int) 1e9 + 7;
+
 int add_mod (int a, int b) { 
   int res = (a + b) % mod;
   res += (res < 0 ? mod : 0);
@@ -2068,5 +2069,16 @@ void gen (int pos, int mask) { // Alert:: change type, e.g. long long mask
      * then, call for the next state */
     gen(p + 1, mask | (1 << p)); // Alert:: change type, e.g. (1LL)
   }
+}
+endsnippet
+
+
+
+#--------------------------------- Geometry -----------------------------------#
+
+snippet collinear "Check if 3 points are collinear i.e lies in the same line or not" b
+/* collinear(x0, y0, x1, y1, x2, y2) */
+bool collinear (int x1, int y1, int x2, int y2, int x3, int y3) { 
+  return (y1 - y2) * (x2 - x3) == (y2 - y3) * (x1 - x2);
 }
 endsnippet

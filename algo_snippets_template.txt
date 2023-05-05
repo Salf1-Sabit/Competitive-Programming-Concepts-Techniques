@@ -646,6 +646,55 @@ string to_binary (int leading_zeroes, T x) {
 }
 endsnippet
 
+
+
+
+#--------------------------------- Graph -----------------------------------#
+
+snippet dsu_array "This can create an array of a DSU" b
+/* **Step (1) is mandatory */
+/* 1. for (int i = 1; i <= dsu_size; ++i) { 
+        dsu[i].init();   
+      } 
+   2. dsu[i].merge(u, v) 
+   3. dsu[i].find_set(v) 
+   4. dsu[i].find_group_size(v) */
+const int dsu_size = (int) 1e2; // **adjust this value
+struct disjoint_set { 
+  const int tot_nodes = (int) 1e2; // **adjust this value
+  vector<int> par, siz;
+  int find_set(int v) {
+    if (par[v] == v) {
+      return v;
+    }
+    return par[v] = find_set(par[v]);
+  }
+  void init() {
+    par.resize(tot_nodes + 1);
+    siz.resize(tot_nodes + 1);
+    for (int u = 1; u <= tot_nodes; ++u) {
+      par[u] = u;
+      siz[u] = 1;
+    }
+  }
+  void merge(int a, int b) {
+    a = find_set(a);
+    b = find_set(b);
+    if (a != b) {
+      if (siz[a] < siz[b]) {
+        swap(a, b);
+      }
+      par[b] = a;
+      siz[a] += siz[b];
+    }
+  }
+  int find_group_size(int a) { 
+    a = find_set(a);
+    return siz[a];
+  }
+} dsu[dsu_size + 1]; // **enter array size here
+endsnippet
+
 snippet dsu "Disjoint Set Union" b 
 /* disjoint_set<int> dsu(n + 1); */
 /* dsu.make_set(u, v); */

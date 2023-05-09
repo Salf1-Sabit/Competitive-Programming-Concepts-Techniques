@@ -28,10 +28,10 @@ int main () {
     }
     vector<custom> dp(n + 1, custom(all_subset));
     for (int i = 0; i < n; ++i) { 
-      dp[i + 1][a[i]] = add_mod(dp[i + 1][a[i]], 1);
+      dp[i + 1][a[i]] = add_mod(dp[i + 1][a[i]], 1); // Start a subsequence from the (ith) element
       for (int mask = 0; mask < all_subset; ++mask) { 
-        dp[i + 1][mask] = add_mod(dp[i + 1][mask], dp[i][mask]);
-        dp[i + 1][mask & a[i]] = add_mod(dp[i + 1][mask & a[i]], dp[i][mask]);
+        dp[i + 1][mask] = add_mod(dp[i + 1][mask], dp[i][mask]); // Don't take the (ith) element into the current subsequence
+        dp[i + 1][mask & a[i]] = add_mod(dp[i + 1][mask & a[i]], dp[i][mask]); // Take the (ith) element into the current subsequence
       }
     }
     long long ans = 0;

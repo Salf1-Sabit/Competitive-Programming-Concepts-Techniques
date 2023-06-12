@@ -49,21 +49,40 @@ snippet mod_utility "mod utility" b
 const int mod = (int) 1e9 + 7;
 
 int add_mod (int a, int b) { 
-  int res = (a + b) % mod;
-  res += (res < 0 ? mod : 0);
-  return res;
+  return (a + b) % mod;
 }
 
 int sub_mod (int a, int b) { 
   int res = (a - b) % mod;
-  res += (res < 0 ? mod : 0);
-  return res;
+  return res + (res < 0 ? mod : 0);
 }
 
 int mult_mod (int a, int b) { 
-  int res = (a * 1LL * b) % mod;
-  res += (res < 0 ? mod : 0);
-  return res;
+  return (a * 1LL * b) % mod;
+}
+endsnippet
+
+snippet is_pal "Checks if a string is a palindrome or not" b
+bool is_palindrome (string s) { 
+  auto t = s;
+  reverse(t.begin(), t.end());
+  return t == s;
+}
+endsnippet
+
+snippet count_peaks_and_valleys "Returns the count of peaks and valleys from an array" b
+/* 1. Returns the count of peaks and valleys from an array
+ * 2. Sort the array beforehand if the question requires 
+ * 3. To use: cout << count_peaks_and_valleys(a) << '\n'; */
+int count_peaks_and_valleys (vector<int> a) {
+  int cnt_peaks_and_valleys = 0;
+  int n = unique(a.begin(), a.end()) - a.begin();
+  for (int i = 0; i < n; i++) {
+    if (!i or i == n - 1 or (a[i - 1] < a[i]) == (a[i] > a[i + 1])) {
+      cnt_peaks_and_valleys++;
+    }
+  }
+  return cnt_peaks_and_valleys;
 }
 endsnippet
 
@@ -219,15 +238,30 @@ auto kadane = [&] () {
 endsnippet
 
 snippet binary_expo "Power Algo" b
-/* binary_expo<int>(2, n - 1, m); */
-template<typename T, typename X>
-T binary_expo (T val, T power, X m) {
+/* binary_expo<int>(2, n - 1); */
+const int mod = (int) 1e9 + 7;
+
+int add_mod (int a, int b) { 
+  return (a + b) % mod;
+}
+
+int sub_mod (int a, int b) { 
+  int res = (a - b) % mod;
+  return res + (res < 0 ? mod : 0);
+}
+
+int mult_mod (int a, int b) { 
+  return (a * 1LL * b) % mod;
+}
+ 
+template<typename T>
+T binary_expo (T val, T power) {
   T output = 1;
   while (power) {
     if (power & 1) {
-      output = T((output * 1LL * val) % m);
+      output = mult_mod(output, val);
     }
-    val = (val * 1LL * val) % m;
+    val = mult_mod(val, val);
     power >>= 1;
   }
   return output;

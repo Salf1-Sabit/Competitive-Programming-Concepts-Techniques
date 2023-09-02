@@ -47,92 +47,76 @@ endsnippet
 
 snippet mod_utility "mod utility" b
 const int mod = (int) 1e9 + 7;
-
 int add_mod (int a, int b) { 
-  return (a + b) % mod;
+  int res = (a + b) % mod;
+  res += (res < 0 ? mod : 0);
+  return res;
 }
 
 int sub_mod (int a, int b) { 
   int res = (a - b) % mod;
-  return res + (res < 0 ? mod : 0);
+  res += (res < 0 ? mod : 0);
+  return res;
 }
 
 int mult_mod (int a, int b) { 
-  return (a * 1LL * b) % mod;
+  int res = (a * 1LL * b) % mod;
+  res += (res < 0 ? mod : 0);
+  return res;
 }
 endsnippet
 
-snippet is_pal "Checks if a string is a palindrome or not" b
-bool is_palindrome (string s) { 
-  auto t = s;
-  reverse(t.begin(), t.end());
-  return t == s;
+
+snippet LCS "Longest Common Subsequence in [O(n) Space | O(n * m) Time]" b
+// Space Optimized LCS - Space O(n)
+
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+  string s = "AGGTAB";
+  string t = "GXTXAYB"; // Ans = 4
+  int n = (int) s.size();
+  int m = (int) t.size();
+  vector<vector<int>> dp(2, vector<int>(m + 1));
+  for (int i = 0; i <= n; ++i) { 
+    int k = i & 1;
+    for (int j = 0; j <= m; ++j) { 
+      if (i == 0 or j == 0) { 
+        dp[k][j] = 0;
+      } else if (s[i - 1] == t[j - 1]) { 
+        dp[k][j] = 1 + dp[k ^ 1][j - 1];
+      } else { 
+        dp[k][j] = max(dp[k ^ 1][j], dp[k][j - 1]);
+      }
+    }
+  }
+  cout << max(dp[1][m], dp[0][m]) << '\n';
+  return 0;
 }
 endsnippet
 
-snippet count_peaks_and_valleys "Returns the count of peaks and valleys from an array" b
-/* 1. Returns the count of peaks and valleys from an array
- * 2. Sort the array beforehand if the question requires 
- * 3. To use: cout << count_peaks_and_valleys(a) << '\n'; */
-int count_peaks_and_valleys (vector<int> a) {
-  int cnt_peaks_and_valleys = 0;
-  int n = unique(a.begin(), a.end()) - a.begin();
+
+snippet LIS "Longest Increasing Subsequence" b
+// LIS in O(nlog(n))
+int LIS (vector<int> const& a) {
+  int n = a.size();
+  const int inf = 1e9;
+  vector<int> dp(n + 1, inf);
+  dp[0] = -inf;
   for (int i = 0; i < n; i++) {
-    if (!i or i == n - 1 or (a[i - 1] < a[i]) == (a[i] > a[i + 1])) {
-      cnt_peaks_and_valleys++;
+    int l = upper_bound(dp.begin(), dp.end(), a[i]) - dp.begin();
+    if (dp[l - 1] < a[i] and a[i] < dp[l]) { 
+      dp[l] = a[i];
     }
   }
-  return cnt_peaks_and_valleys;
-}
-endsnippet
-
-snippet string_sum "String sum utility" b
-/* Time complexity: O(2 * max(|a|, |b|)) 
- * Step 1: string_sum (a, b) */
-string string_sum (string a, string b) { 
-  if ((int) a.size() < (int) b.size()) { 
-    swap(a, b);
-  }
-  string zeroes = "";
-  int n = (int) a.size();
-  while ((int) zeroes.size() + (int) b.size() != n) { 
-    zeroes += "0";
-  }
-  b = zeroes + b;
-  short carry = 0;
-  string cur_row;
-  for (int iab = n - 1; ~iab; --iab) { 
-    int a_val = a[iab] - '0';
-    int b_val = b[iab] - '0';
-    short tmp_sum = a_val + b_val + carry;
-    cur_row.push_back(tmp_sum % 10 + '0');
-    carry = tmp_sum / 10;
-  }
-  reverse(cur_row.begin(), cur_row.end());
-  return cur_row;
-}
-endsnippet
-
-snippet string_multiplication "String multiplication utility" b
-/* Time complexity: O(2 * max(|a|, |b|)) 
- * Step 1: string_multiply (a, b) */
-string string_multiply (string a, string b) { 
-  if (a == "0" or b == "0"){
-    return "0";
-  }
-  int carry = 0;
-  string product;
-  int m = a.size() - 1;
-  int n = b.size() - 1;
-  for (int i = 0; i <= m+n or carry; ++i) {
-    for (int j = max(0, i - n); j <= min(i, m); ++j) { 
-      carry += (a[m - j] - '0') * (b[n - i + j] - '0');
+  int ans = 0;
+  for (int l = 0; l <= n; l++) {
+    if (dp[l] < inf) { 
+      ans = l;
     }
-    product += carry % 10 + '0';
-    carry /= 10;
   }
-  reverse(product.begin(), product.end());
-  return product;
+  return ans;
 }
 endsnippet
 
@@ -174,33 +158,6 @@ T distinct_digits (T x) {
 }
 endsnippet
 
-snippet range_and "Returns range AND between (L, R)" b
-/* Returns the range and between (L, R) 
- * Time complexity: O(log(max(L, R))) */
-template <typename T> 
-T range_and (T left, T right) { 
-  T rng_and = 0;
-  /* While both of the numbers are positive keep going */
-  while (left and right) { 
-    T msb_left = __lg(left);
-    T msb_right = __lg(right);
-    /* If msb of both of the number are same then, 
-     * this msb contributes to the answer, and get subtracted 
-     * from both of the numbers.
-     * Otherwise, there is no more common bit between them */
-    if (msb_left == msb_right) { 
-      long long common_msb_power = ((T) 1 << msb_left);
-      rng_and += common_msb_power;
-      left -= common_msb_power;
-      right -= common_msb_power;
-    } else { 
-      break;
-    }
-  }
-  return rng_and;
-}
-endsnippet
-
 snippet intersect "Two objects intersection utility" b
 /* intersect<int>(a, b, c, d) 
  * Note : Used for determining if two objects intersects or not.
@@ -238,30 +195,15 @@ auto kadane = [&] () {
 endsnippet
 
 snippet binary_expo "Power Algo" b
-/* binary_expo<int>(2, n - 1); */
-const int mod = (int) 1e9 + 7;
-
-int add_mod (int a, int b) { 
-  return (a + b) % mod;
-}
-
-int sub_mod (int a, int b) { 
-  int res = (a - b) % mod;
-  return res + (res < 0 ? mod : 0);
-}
-
-int mult_mod (int a, int b) { 
-  return (a * 1LL * b) % mod;
-}
- 
-template<typename T>
-T binary_expo (T val, T power) {
+/* binary_expo<int>(2, n - 1, m); */
+template<typename T, typename X>
+T binary_expo (T val, T power, X m) {
   T output = 1;
   while (power) {
     if (power & 1) {
-      output = mult_mod(output, val);
+      output = T((output * 1LL * val) % m);
     }
-    val = mult_mod(val, val);
+    val = (val * 1LL * val) % m;
     power >>= 1;
   }
   return output;
@@ -347,8 +289,7 @@ endsnippet
 
 snippet ncr_triv "nCr trivial version" b
 /* Used when there's no mod used 
- * Time complexity: O(k) 
- * For-use: ncr_triv<int>(n, r) */
+ * Time complexity: O(k) */
 template <typename T>
 T ncr_triv (T n, T k) { 
   T ncr = 1;
@@ -615,19 +556,6 @@ vector<T> find_divisors (T n) {
 }
 endsnippet
 
-snippet constant_divisors "Calculates the divisors count in O(1) " b 
-/* constant_divisors(maxn) */
-vector<int> div_cnt;
-void constant_divisors (int maxn) { 
-  div_cnt.assign(maxn + 1, 1);
-  for (int d = 2; 1LL * d * d <= maxn; ++d) { 
-    for (int j = d; j <= maxn; j += d) { 
-      div_cnt[j] += 1;
-    }
-  }
-}
-endsnippet
-
 snippet primality_check "primality_check" b 
 bool primality_check (int x) {
   for (int d = 2; d * d <= x; d++) {
@@ -691,55 +619,6 @@ string to_binary (int leading_zeroes, T x) {
   }
   return bin;
 }
-endsnippet
-
-
-
-
-#--------------------------------- Graph -----------------------------------#
-
-snippet dsu_array "This can create an array of a DSU" b
-/* **Step (1) is mandatory */
-/* 1. for (int i = 1; i <= dsu_size; ++i) { 
-        dsu[i].init();   
-      } 
-   2. dsu[i].merge(u, v) 
-   3. dsu[i].find_set(v) 
-   4. dsu[i].find_group_size(v) */
-const int dsu_size = (int) 1e2; // **adjust this value
-struct disjoint_set { 
-  const int tot_nodes = (int) 1e2; // **adjust this value
-  vector<int> par, siz;
-  int find_set(int v) {
-    if (par[v] == v) {
-      return v;
-    }
-    return par[v] = find_set(par[v]);
-  }
-  void init() {
-    par.resize(tot_nodes + 1);
-    siz.resize(tot_nodes + 1);
-    for (int u = 1; u <= tot_nodes; ++u) {
-      par[u] = u;
-      siz[u] = 1;
-    }
-  }
-  void merge(int a, int b) {
-    a = find_set(a);
-    b = find_set(b);
-    if (a != b) {
-      if (siz[a] < siz[b]) {
-        swap(a, b);
-      }
-      par[b] = a;
-      siz[a] += siz[b];
-    }
-  }
-  int find_group_size(int a) { 
-    a = find_set(a);
-    return siz[a];
-  }
-} dsu[dsu_size + 1]; // **enter array size here
 endsnippet
 
 snippet dsu "Disjoint Set Union" b 
@@ -1036,133 +915,6 @@ struct sparse_table {
 };
 endsnippet
 
-snippet wavelet_tree  "Wavelet tree for range queries in O(log n)" b 
-/*
-  // input array - 1 based
-  for (int i = 1; i <= n; ++i) {  
-    cin >> a[i];
-  }
-  // create the tree
-  wavelet_tree T(a + 1, a + n + 1, 1, MAX);
-  // kth smallest
-  cout << T.kth(l, r, k) << endl;
-  // less than or equal to K
-  cout << T.LTE(l, r, k) << endl;
-  // count occurence of K in [l, r]
-  cout << T.count(l, r, k) << endl;
-  // sum of elements less than or equal to K in [l, r]
-  cout << T.sumk(l, r, k) << endl; 
-*/
-
-const int N = 3e5 + 1; // DEFINE size of array
-const int MAX = 1e7 + 1; // DEFINE max element
-int a[N]; // input array
-
-struct wavelet_tree {
-	int lo, hi;
-	wavelet_tree *l, *r;
-	vector<int> b;
-	vector<int> c; // c holds the prefix sum of elements
- 
-	// number of elements are in range [x,y]
-	// array indices are [from, to)
-	wavelet_tree (int *from, int *to, int x, int y) {
-		lo = x, hi = y;
-		if(to <= from) { 
-      return;
-    }
-		if (hi == lo) {
-			b.reserve(to - from + 1);
-      b.push_back(0);
-			c.reserve(to-from+1);
-      c.push_back(0);
-      for(auto it = from; it != to; it++) {
-        b.push_back(b.back() + 1);
-        c.push_back(c.back() + *it);
-      }
-			return;
-		}
-		int mid = (lo + hi) / 2;
-		auto f = [mid] (int x) {
-			return x <= mid;
-		};
-		b.reserve(to - from + 1);
-		b.push_back(0);
-		c.reserve(to - from + 1);
-		c.push_back(0);
-		for(auto it = from; it != to; it++) {
-			b.push_back(b.back() + f(*it));
-			c.push_back(c.back() + *it);
-		}
-		// see how lambda function is used here	
-		auto pivot = stable_partition(from, to, f);
-		l = new wavelet_tree(from, pivot, lo, mid);
-		r = new wavelet_tree(pivot, to, mid + 1, hi);
-	}
- 
-	// kth smallest element in [l, r]
-	int kth (int l, int r, int k){
-		if (r < l) { 
-      return 0;
-    }
-		if (lo == hi) { 
-      return lo;
-    }
-		int inLeft = b[r] - b[l-1];
-		int lb = b[l - 1]; // amount of nos in first (l-1) nos that go in left 
-		int rb = b[r]; // amount of nos in first (r) nos that go in left
-		if (k <= inLeft) {
-      return this -> l -> kth(lb + 1, rb , k);
-    }
-		return this -> r -> kth(l - lb, r - rb, k - inLeft);
-	}
- 
-	// count of nos in [l, r] Less than or equal to k
-	int LTE (int l, int r, int k) {
-		if (r < l or k < lo) {
-      return 0;
-    }
-		if (hi <= k) {
-      return r - l + 1;
-    }
-		int lb = b[l - 1], rb = b[r];
-		return this -> l -> LTE(lb + 1, rb, k) + this -> r -> LTE(l - lb, r - rb, k);
-	}
- 
-	// count of nos in [l, r] equal to k
-	int count (int l, int r, int k) {
-		if (l > r or k < lo or k > hi) {
-      return 0;
-    }
-		if (lo == hi) {
-      return r - l + 1;
-    }
-		int lb = b[l - 1], rb = b[r], mid = (lo + hi) / 2;
-		if (k <= mid) {
-      return this -> l -> count(lb + 1, rb, k);
-    }
-		return this -> r -> count(l - lb, r - rb, k);
-	}
- 
-	// sum of nos in [l ,r] less than or equal to k
-	int sumk (int l, int r, int k) {
-		if (r < l or k < lo) {
-      return 0;
-    }
-		if (hi <= k) {
-      return c[r] - c[l - 1];
-    }
-		int lb = b[l - 1], rb = b[r];
-		return this -> l -> sumk(lb + 1, rb, k) + this -> r -> sumk(l - lb, r - rb, k);
-	}
- 
-	~wavelet_tree(){
-		delete l;
-		delete r;
-	}
-};
-endsnippet
-
 snippet  segment_tree "Segment Tree" b 
 /** 1. segment_tree<long long> seg_tree(a);
   * 2. seg_tree.build(1, 0, n - 1);
@@ -1221,26 +973,6 @@ struct segment_tree {
     tree[node] = tree[node << 1] + tree[(node << 1) + 1];
   }
 };
-endsnippet
-
-snippet 2D_prefix_sum "2D prefix sum utilities" b
-/* prefixSum2D(a); */
-vector<vector<long long>> psa;
-void prefixSum2D (vector<vector<long long>> a) {
-  psa.resize(n, vector<long long>(m));
-  psa[0][0] = a[0][0];
-  for (int i = 1; i < m; i++) { 
-    psa[0][i] = psa[0][i - 1] + a[0][i];
-  }
-  for (int i = 1; i < n; i++) { 
-    psa[i][0] = psa[i - 1][0] + a[i][0];
-  }
-  for (int i = 1; i < n; i++) {
-    for (int j = 1; j < m; j++) { 
-      psa[i][j] = psa[i - 1][j] + psa[i][j - 1] - psa[i - 1][j - 1] + a[i][j];
-    }
-  }
-}
 endsnippet
 
 snippet 2D_segment_tree "2D segment tree utilities" b
@@ -1886,20 +1618,6 @@ auto maxflow = [&](int s, int t) {
 cout << maxflow(source, sink) << '\n';
 endsnippet
 
-snippet valid_brack_seq "Valid bracket sequence checker (strings)" b
-bool is_valid_brack_seq (string s) {
-   int brack_counter = 0;
-   for (auto c : s) {
-     brack_counter += c == '(';
-     brack_counter -= c == ')';
-     if (brack_counter < 0) {
-       return false;
-     }
-   }
-   return !brack_counter;
-}
-endsnippet
-
 snippet kmp "Knuth Morris Pratt Algo (strings)" b
 /* Total complexity: O(n + m) */
 /* Application (string problems) : */ 
@@ -2261,47 +1979,5 @@ if (newfile.is_open()){   //checking whether the file is open
      cout << tp << "\n"; //print the data of the string
   }
   newfile.close(); //close the file object.
-}
-endsnippet
-
-#--------------------------------- bitmasking -----------------------------------#
-
-snippet gen_nCr "Generates all possible masks for a list for a specific bit count" b
-/* Generates all possible masks with needed set bits count 
- * Set values of NCR below 
- * Step 1: gen(first_pos, default_mask_value) 
- *   Exampele: gen(0, 0) */
-
-// This vector contains all the generated masks 
-vector<int> masks; // Alert:: change type e.g. <long long> masks
-int last_pos = N, need_bits = R;
-
-void gen (int pos, int mask) { // Alert:: change type, e.g. long long mask
-  int set_bits = __builtin_popcount(mask);
-  if (set_bits == need_bits) { 
-    // if mask has needed set bits, take it
-    masks.push_back(mask); 
-    return;
-  }
-  if (pos == last_pos) { 
-    // if reaches the (last_bit + 1)th bit then, return
-    return;
-  }
-  for (int p = pos; p < last_pos; ++p) { 
-    /* Turn on the pth bit of the mask and 
-     * then, call for the next state */
-    gen(p + 1, mask | (1 << p)); // Alert:: change type, e.g. (1LL)
-  }
-}
-endsnippet
-
-
-
-#--------------------------------- Geometry -----------------------------------#
-
-snippet collinear "Check if 3 points are collinear i.e lies in the same line or not" b
-/* collinear(x0, y0, x1, y1, x2, y2) */
-bool collinear (int x1, int y1, int x2, int y2, int x3, int y3) { 
-  return (y1 - y2) * (x2 - x3) == (y2 - y3) * (x1 - x2);
 }
 endsnippet

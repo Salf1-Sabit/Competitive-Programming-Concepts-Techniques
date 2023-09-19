@@ -1,4 +1,4 @@
-# ----------------------- Snippets ----------------------- #
+ # ----------------------- Snippets ----------------------- #
 
 
 snippet regular_4d_adjacent_moves "Regular 4D adjacent Moves" b
@@ -1979,5 +1979,14 @@ if (newfile.is_open()){   //checking whether the file is open
      cout << tp << "\n"; //print the data of the string
   }
   newfile.close(); //close the file object.
+}
+endsnippet
+
+
+/* ------------------------------------ geometry ------------------------ */
+snippet collinear "Checks if three points are collinear or not" b
+// Formula: (y2 - y1) (x3 - x2) = (y3 - y2) (x2 - x1)
+bool collinear (auto a, auto b, auto c) {
+  return (b[1] - a[1]) * (c[0] - b[0]) == (c[1] - b[1]) * (b[0] - a[0]);
 }
 endsnippet

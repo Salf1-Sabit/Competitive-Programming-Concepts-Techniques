@@ -1,3 +1,8 @@
+/**
+  Author: Salfi_Sabit 
+  Institution: University of Information Technology & Sciences
+**/
+
 #include <bits/stdc++.h>
 using namespace std;
 

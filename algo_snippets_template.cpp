@@ -45,6 +45,15 @@ auto inside = [&] (int row, int col) {
 };
 endsnippet
 
+snippet is_power_of_two "Check if a number is power of two or not" b
+bool is_power_of_two (long long x) {
+  if (x <= 0) {
+    return false;
+  }
+  return (x & (x - 1)) == 0;
+}
+endsnippet
+
 snippet mod_utility "mod utility" b
 const int mod = (int) 1e9 + 7;
 int add_mod (int a, int b) { 
@@ -751,69 +760,72 @@ struct fenwick_tree {
 endsnippet
 
 snippet  sqrt_decomp "Sqrt Decomposition Utlity" b 
-/* Processes each query in sqrt(n) time. */
-/* sqrt_decomp<int> sd(a); */
-/* cout << sd.query(l, r) << '\n'; */
+// 0 based indexing
+// Time: O(sqrt(N)) each query
+/* Initialize: sqrt_decomp<int> sd(a); */
+/* Query: cout << sd.query(l, r) << '\n'; // 0 based indexing (l, r */
+/* Update: sd.update(idx, val) // 0 based indexing (idx) */
+
 template <typename T> 
 struct sqrt_decomp { 
-  int n; 
-  vector<T> a;
-  vector<T> tab;
-  int tot_block;
-  void proc () { 
+  int n, blk_sz;
+  vector<T> a, block;
+  void preprocess () { 
+    int blk_idx = -1;
+    // Time: O(N)
     for (int i = 0; i < n; ++i) { 
-      T& xx = tab[i / tot_block];
-      /* Change this according to the question */
-      xx = min(xx, a[i]);
+      if (i % blk_sz == 0) { 
+        blk_idx += 1;
+      }
+      block[blk_idx] += a[i];
     }
   }
   sqrt_decomp (vector<T> a) { 
     this -> a = a;
     n = (int) a.size();
-    tot_block = (int) sqrtl(n);
-    /* Change this according to the question */
-    tab.assign(tot_block + 1, (T) 1e9);
-    proc();
+    blk_sz = (int) sqrtl(n);
+    /* Change the initial value according to the question */
+    /* e.g. (int) 1e9 for finding minimum */
+    block.assign(blk_sz + 1, 0);
+    preprocess();
   }
+  // Time: O(3 * sqrt(N)) = sqrt(N)
   /* returns sum/min/max/cnt of an array in the range (l, r) */
   T query (int l, int r) { 
-    /* Change this according to the question */
-    T mn = (T) 1e9;
-    int lb = l / tot_block;
-    int rb = r / tot_block;
-    if (lb == rb) { 
-      for (int i = l; i <= r; ++i) { 
-        /* Change this according to the question */
-        mn = min(a[i], mn);
-      }
-      return mn;
+    /* Change this initial value according to the question */
+    /* e.g. (int) 1e9 for finding minimum */
+    T sum = (T) 0;
+    while (l < r and l % blk_sz != 0 and l != 0) { 
+      sum += a[l++];
     }
-    for (int i = l; i < tot_block * (lb + 1); ++i) { 
-      /* Change this according to the question */
-      mn = min(a[i], mn);
+    while (l + blk_sz - 1 <= r) { 
+      sum += block[l / blk_sz];
+      l += blk_sz;
     }
-    for (int i = lb + 1; i <= rb - 1; ++i) { 
-      /* Change this according to the question */
-      mn = min(tab[i], mn);
+    while (l <= r) { 
+      sum += a[l++];
     }
-    for (int i = tot_block * rb; i <= r; ++i) { 
-      /* Change this according to the question */
-      mn = min(a[i], mn);
-    }
-    return mn;
+    return sum;
+  }
+  // Time: Point update O(1)
+  void update (int idx, T val) { 
+    int block_num = idx / blk_sz;
+    block[block_num] += val - a[idx];
+    a[idx] = val;
   }
 };
 endsnippet
 
 snippet mos_algo "Mo's algorithm Utility" b 
+/* Why this algo: This algo is used to answer those queries which are dynamic e.g. (distinct elems). Which cannot be done using segment tree. */ 
 /* Time Complexity: O((N + Q) F sqrt(Q)). Where F = time of add-remove functions. */
-/*  				-> Firstly, if all of the left index are at same block then, for one block we will move our right index at most N times. Then, for every block we will have O(N * sqrt(N)) times. /*
-/* 					-> Secondly, for each query our left pointer can move at most sqrt(N) times. Because, each block has at most sqrt(N) cells. So, for Q query there will be O(Q * sqrt(N)) calls at most. 
-/* 					-> Hence, O(N * sqrt(N) + Q * sqrt(N)) = O((N + Q) * sqrt(N)) by taking sqrt(N) common from both sides. /*
+/*  				-> Firstly, if all of the left index are at same block then, for one block we will move our right index at most N times. Then, for every block we will have O(N * sqrt(N)) times. */
+/* 					-> Secondly, for each query our left pointer can move at most sqrt(N) times. Because, each block has at most sqrt(N) cells. So, for Q query there will be O(Q * sqrt(N)) calls at most. */
+/* 					-> Hence, O(N * sqrt(N) + Q * sqrt(N)) = O((N + Q) * sqrt(N)) by taking sqrt(N) common from both sides. */
 /* mos_algo<int> mo(Q, a, N); */
 /* auto ans = mo.query_answers(); */
-/* This algo is used to answer those queries which are dynamic e.g. (distinct elems). Which cannot be done using segment tree. */ 
 /* Before using this, make sure to store all the queries (0 based indexing) in a vector this manner vector{l, r, i} */
+
 template <typename T> 
 struct mos_algo { 
   int q;
@@ -833,7 +845,7 @@ struct mos_algo {
       if (blockl != blockr) { 
         return blockl < blockr;
       }
-	  /* Optimization: Here, by changing the add block in ascending order and the even block in descending order. The right pointer will have to move less. This will eliminate the extra movement of the right pointer which was wasteful. right pointer movement (before) i: 1, 2, 3, 1, 2, 3, 1, 2, 3. Right pointer movement (now) i: 1, 2, 3, 3, 2, 1, 1, 2, 3, 3, 2, 1. */ 
+    /* Optimization: Here, by changing the add block in ascending order and the even block in descending order. The right pointer will have to move less. This will eliminate the extra movement of the right pointer which was wasteful. right pointer movement (before) i: 1, 2, 3, 1, 2, 3, 1, 2, 3. Right pointer movement (now) i: 1, 2, 3, 3, 2, 1, 1, 2, 3, 3, 2, 1. */ 
       return (x[0] / tot_block & 1) ? x[1] < y[1] : y[1] < x[1];
     });
   }

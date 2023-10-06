@@ -18,19 +18,21 @@ Every even number is divisible by 2. That is, any number that ends with 2, 4, 6,
 
 If the sum of the digits of a number is divisible by 3, then the number as a whole would also be divisible by 3.
 
-    Consider a number, 308. To check whether 308 is divisible by 3 or not, take sum of the digits (i.e. 3+0+8= 11).
+    Consider the number, 308. To check whether 308 is divisible by 3 or not, take the sum of the digits (i.e. 3+0+8= 11).
 
 ## When a number is divisible by 4?
 
 If the last two digits of a number are divisible by 4, then that number is a multiple of 4 and is divisible by 4 completely.
 
-    Example: Take the number 2308. Consider the last two digits i.e. 08. As 08 is divisible by 4, the original number 2308 is also divisible by 4.
+    Example: Take the number 2308. Consider the last two digits i.e. 08. 
+    As 08 is divisible by 4, the original number 2308 is also divisible by 4.
 
 ## When a number is divisible by 5?
 
-The divisibility rule of 5 states that if the digit on the units place, that is, the last digit of a given number is 5 or 0, then such a number is divisible by 5.
+The divisibility rule of 5 states that if the digit on the unit's place, that is, the last digit of a given number is 5 or 0, then such a number is divisible by 5.
 
-    For example, in 39865, the last digit is 5, hence, the number is completely divisible by 5.
+    For example, in 39865, the last digit is 5, 
+    hence, the number is completely divisible by 5.
 
 ## When a number is divisible by 6?
 
@@ -38,11 +40,14 @@ The number is divisible by 6 if it is divisible by both 2 and 3. <br/>
 To check the divisibility of a number by 2 the last place should have an even number and the sum of the digits of the number should be divisible by 3. <br/>
 If the number is not divisible by either 2 or 3 then it would not be divisible by 6.
 
-    Take the example of number 136582. In this number at the unit place, there is 2 which is, even so, making it divisible by 2.
+    Take the example of number 136582. 
+    In this number at the unit place, there is 2 which is, even so, making it divisible by 2.
 
-    To check the divisibility by 3 we add all the digits 1, 3, 6, 5, 8, and 2 which will result in 25 which is not divisible by 3.
+    To check the divisibility by 3 we add all the digits 1, 3, 6, 5, 8, and 2 
+    which will result in 25 which is not divisible by 3.
 
-    So the number 136582 is not divisible by 6. This is so because to be divisible by 6, the number should be divisible by both 2 and 3.
+    So the number 136582 is not divisible by 6. 
+    This is so because to be divisible by 6, the number should be divisible by both 2 and 3.
 
 ## When a number is divisible by 7?
 
@@ -72,13 +77,15 @@ A number is divisible by 8 if its last three digits are divisible by 8.
 
     For example, 880 and 905,256 are divisible by 8 but 74,513 is not divisible by 8.
 
-    To check divisibility by 8, divide the last three digits of the number by 8. If the result is a whole number, then the original number is divisible by 8.
+    To check divisibility by 8, divide the last three digits of the number by 8. 
+    If the result is a whole number, then the original number is divisible by 8.
 
 ## When a number is divisible by 9?
 
-The rule for divisibility by 9 is similar to divisibility rule for 3. That is, if the sum of digits of the number is divisible by 9, then the number itself is divisible by 9.
+The rule for divisibility by 9 is similar to the divisibility rule for 3. That is, if the sum of digits of the number is divisible by 9, then the number itself is divisible by 9.
 
-    Example: Consider 78532, as the sum of its digits (7+8+5+3+2) is 25, which is not divisible by 9, hence 78532 is not divisible by 9.
+    Example: Consider 78532, as the sum of its digits (7+8+5+3+2) is 25, 
+    which is not divisible by 9, hence 78532 is not divisible by 9.
 
 ## When a number is divisible by 10?
 

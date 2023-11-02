@@ -1,3 +1,4 @@
+// Count all subsets having K set bits after bitwise AND
 // Problem link: https://codeforces.com/contest/1829/problem/H 
 
 #include <bits/stdc++.h>

@@ -627,7 +627,7 @@ template <typename T>
 typedef tree <
   T, // type
   null_type, // use mapped_type for map
-  less<int>, // comparator (less/greater) & type [less_equal for multiset]
+  less<T>, // comparator (less/greater) & type [less_equal for multiset]
   rb_tree_tag,
   tree_order_statistics_node_update
 > ordered_set;

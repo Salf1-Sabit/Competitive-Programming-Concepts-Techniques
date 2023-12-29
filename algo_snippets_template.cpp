@@ -609,7 +609,7 @@ endsnippet
 
 snippet policy_based_data_structure "Policy based data strucuture" b
 /** 1. Firstly, place the header files and namespace and set the data type and comparator.
- *  2. ordered_set X;
+ *  2. ordered_set<int> X;
  *  3. X.insert(8);
  *  4. *X.find_by_order(1) 
  *        Note : finds the kth largest or the kth smallest element (counting from zero)
@@ -623,8 +623,9 @@ snippet policy_based_data_structure "Policy based data strucuture" b
 #include <ext/pb_ds/assoc_container.hpp>
 #include <ext/pb_ds/tree_policy.hpp>
 using namespace __gnu_pbds;
+template <typename T>
 typedef tree <
-  int, // type
+  T, // type
   null_type, // use mapped_type for map
   less<int>, // comparator (less/greater) & type [less_equal for multiset]
   rb_tree_tag,

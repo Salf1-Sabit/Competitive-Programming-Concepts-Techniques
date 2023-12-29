@@ -624,13 +624,14 @@ snippet policy_based_data_structure "Policy based data strucuture" b
 #include <ext/pb_ds/tree_policy.hpp>
 using namespace __gnu_pbds;
 template <typename T>
-typedef tree <
-  T, // type
+using ordered_set = 
+  tree <T,
   null_type, // use mapped_type for map
   less<T>, // comparator (less/greater) & type [less_equal for multiset]
   rb_tree_tag,
   tree_order_statistics_node_update
-> ordered_set;
+>;
+
 // Returns the position if found, else returns size
 auto pbds_lower_bound = [&] (int el) { 
   return (int) ms.order_of_key(el);

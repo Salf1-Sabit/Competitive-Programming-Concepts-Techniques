@@ -824,7 +824,7 @@ snippet mos_algo "Mo's algorithm Utility" b
 /* 					-> Hence, O(N * sqrt(N) + Q * sqrt(N)) = O((N + Q) * sqrt(N)) by taking sqrt(N) common from both sides. */
 /* mos_algo<int> mo(Q, a, N); */
 /* auto ans = mo.query_answers(); */
-/* Before using this, make sure to store all the queries (0 based indexing) in a vector this manner vector{l, r, i} */
+/* Before using this, make sure to store all the queries (0 based indexing) in a vector this manner vector{l, r, query_idx} */
 
 template <typename T> 
 struct mos_algo { 
@@ -835,7 +835,7 @@ struct mos_algo {
   /* Important: This is the answer variable */ 
   /* Change according to the question */
   T curr_ans = 0;
-  /* array<T, 3> {l, r, id} */
+  /* array<T, 3> {l, r, query_idx} */
   vector<array<int, 3>> Q;
   void proc () { 
     /* sorts the queries in asc order */

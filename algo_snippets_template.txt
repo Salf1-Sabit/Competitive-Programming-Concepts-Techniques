@@ -857,6 +857,10 @@ struct mos_algo {
     tot_block = (int) sqrtl(q);
     proc();
   }
+  /* Change the return type and operations according to the question */
+  int get_answer () { 
+    return cur_ans;
+  }
   void add (int pos) { 
     /* Change according to the question */
     if (++frq[a[pos]] == 1) { 
@@ -895,7 +899,7 @@ struct mos_algo {
         remove(cur_r);
         cur_r -= 1;
       }
-      ans[id] = curr_ans; 
+      ans[id] = get_answer(); 
     }
     return ans;
   }

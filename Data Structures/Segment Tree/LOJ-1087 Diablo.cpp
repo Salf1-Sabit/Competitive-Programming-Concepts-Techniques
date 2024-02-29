@@ -1,3 +1,6 @@
+/* Problem link: https://lightoj.com/problem/diablo
+ * Approach: Segment Tree + Binary Search */
+
 #include <bits/stdc++.h>
 using namespace std;
 
